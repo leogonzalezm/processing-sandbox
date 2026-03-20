@@ -411,6 +411,7 @@
         <span class="leyenda-icono">&#x1f4a1;</span>
         <span id="leyendaLienzo">Aquí aparecerán las formas. Cada elemento es un &lt;div&gt; posicionado con CSS.</span>
       </div>
+      <button class="accion boton-limpiar" id="botonDeshacer" style="background:linear-gradient(135deg,#4a6fa5,#2d4a7a);">&#x21a9; Deshacer</button>
       <button class="accion boton-limpiar" id="botonLimpiar">Limpiar Lienzo</button>
     </div>
 
@@ -1419,6 +1420,29 @@ elemento.<span class="prop">style.width</span> = <span class="val">w</span> + <s
   botonEvalTipo.addEventListener('click', evaluarTipo);
   inputTipoDato.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') evaluarTipo();
+  });
+
+  // ── Deshacer última forma ──
+  var botonDeshacer = document.getElementById('botonDeshacer');
+  botonDeshacer.addEventListener('click', function() {
+    var formas = lienzoDom.querySelectorAll('.forma');
+    if (formas.length === 0) {
+      notaEstado.textContent = 'No hay formas para deshacer.';
+      return;
+    }
+    var ultima = formas[formas.length - 1];
+    if (ultima === formaActiva) { formaActiva = null; }
+    ultima.remove();
+    // Seleccionar la nueva última si existe
+    var restantes = lienzoDom.querySelectorAll('.forma');
+    if (restantes.length > 0) {
+      var nuevaUltima = restantes[restantes.length - 1];
+      definirFormaActiva(nuevaUltima, 'Forma anterior seleccionada.');
+    } else {
+      estadoForma.textContent = 'Lienzo vacío.';
+      leyendaLienzo.textContent = 'Lienzo vacío. Usa los controles para crear formas.';
+    }
+    notaEstado.textContent = 'Deshecho: se eliminó la última forma. Quedan ' + restantes.length + '.';
   });
 
   // ── Limpiar lienzo ──
