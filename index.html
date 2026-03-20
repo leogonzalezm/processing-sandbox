@@ -135,6 +135,8 @@
     .punto    { width:10px; height:10px; border-radius:50%; transform:translate(-50%,-50%); }
     .cuadrado { width:80px; height:80px; }
     .circulo  { width:50px; height:50px; border-radius:50%; transform:translate(-50%,-50%); }
+    .triangulo{ clip-path:polygon(50% 0%, 0% 100%, 100% 100%); }
+    .linea    { height:3px; border-radius:2px; }
 
     /* ── Leyenda ── */
     .leyenda-lienzo {
@@ -489,9 +491,9 @@
         <!-- ══════════════ Cap 2: Primitivas ══════════════ -->
         <div class="cap" id="cap2">
           <p class="cap-desc">
-            Una <em>primitiva</em> es una forma visual base. <code>rect()</code> necesita <strong>4 argumentos</strong>:
-            posición (x, y) y dimensiones (ancho, alto). <code>ellipse()</code> también usa 4 argumentos
-            pero se posiciona desde el <strong>centro</strong>.
+            Una <em>primitiva</em> es una forma visual base. <code>rect()</code> y <code>triangle()</code> necesitan
+            argumentos de posición y tamaño. <code>ellipse()</code> se posiciona desde el <strong>centro</strong>.
+            <code>line()</code> conecta dos puntos. Combina estas 4 primitivas para dibujar un paisaje.
           </p>
 
           <div class="cap-controles">
@@ -503,6 +505,8 @@
             </div>
             <button class="accion" id="botonCrearCuadrado">Cuadrado (rect)</button>
             <button class="accion" id="botonCrearCirculo">Círculo (ellipse)</button>
+            <button class="accion" id="botonCrearTriangulo" style="background:linear-gradient(135deg,#2a7b5b,#1a5a3e);">Triángulo (triangle)</button>
+            <button class="accion" id="botonCrearLinea" style="background:linear-gradient(135deg,#4a6fa5,#2d4a7a);">Línea (line)</button>
           </div>
 
           <span class="codigo-titulo">Comparación de código</span>
@@ -523,32 +527,32 @@
             </div>
           </div>
 
-          <span class="mapa-titulo">Mapa de argumentos — <code>rect(x, y, w, h)</code> / <code>ellipse(x, y, w, h)</code></span>
+          <span class="mapa-titulo">Mapa de argumentos por primitiva</span>
           <table class="mapa-args" id="tablaArgsCap2">
-            <tr><th>Argumento</th><th>Qué controla</th><th>En p5.js</th><th>En DOM / CSS</th></tr>
+            <tr><th>Primitiva</th><th>p5.js</th><th>Argumentos</th><th>En DOM / CSS</th></tr>
             <tr>
-              <td><code>x</code></td>
-              <td>Posición horizontal</td>
-              <td>1.er argumento</td>
-              <td><code>left: x px</code></td>
+              <td><code>rect</code></td>
+              <td><code>rect(x, y, w, h)</code></td>
+              <td>x, y = esquina; w, h = tamaño</td>
+              <td><code>left</code>, <code>top</code>, <code>width</code>, <code>height</code></td>
             </tr>
             <tr>
-              <td><code>y</code></td>
-              <td>Posición vertical</td>
-              <td>2.do argumento</td>
-              <td><code>top: y px</code></td>
+              <td><code>ellipse</code></td>
+              <td><code>ellipse(x, y, w, h)</code></td>
+              <td>x, y = centro; w, h = diámetros</td>
+              <td>Igual + <code>border-radius: 50%</code></td>
             </tr>
             <tr>
-              <td><code>w</code></td>
-              <td>Ancho de la forma</td>
-              <td>3.er argumento</td>
-              <td><code>width: w px</code></td>
+              <td><code>triangle</code></td>
+              <td><code>triangle(x1,y1, x2,y2, x3,y3)</code></td>
+              <td>3 vértices (6 valores)</td>
+              <td><code>clip-path: polygon(...)</code></td>
             </tr>
             <tr>
-              <td><code>h</code></td>
-              <td>Alto de la forma</td>
-              <td>4.to argumento</td>
-              <td><code>height: h px</code></td>
+              <td><code>line</code></td>
+              <td><code>line(x1, y1, x2, y2)</code></td>
+              <td>Punto inicio + punto final</td>
+              <td>Div delgado posicionado con <code>left</code>, <code>top</code>, <code>width</code></td>
             </tr>
           </table>
 
@@ -557,8 +561,11 @@
             <ul>
               <li><code>rect()</code> posiciona desde la <strong>esquina superior izquierda</strong> de la caja.</li>
               <li><code>ellipse()</code> posiciona desde el <strong>centro</strong> (equivale a <code>ellipseMode(CENTER)</code>).</li>
+              <li><code>triangle()</code> recibe <strong>6 argumentos</strong> (3 vértices × 2 coordenadas). En CSS se logra con <code>clip-path: polygon()</code>.</li>
+              <li><code>line()</code> conecta dos puntos. En el DOM es un div delgado (3px de alto).</li>
               <li>En el DOM un círculo es una caja con <code>border-radius: 50%</code>.</li>
               <li>El <strong>orden de los argumentos</strong> importa: x, y, w, h — siempre.</li>
+              <li>Combina primitivas para crear paisajes: rectángulos para el suelo, triángulos para montañas, círculos para el sol, líneas para el horizonte.</li>
             </ul>
           </div>
         </div>
@@ -1124,7 +1131,7 @@ elemento.<span class="prop">style.width</span> = <span class="val">w</span> + <s
         '<span class="cm">//    \u2191     \u2191    \u2191    \u2191</span>\n' +
         '<span class="cm">//    x     y    w    h</span>\n' +
         '<span class="cm">//  posX  posY ancho alto</span>';
-    } else {
+    } else if (ultimaFormaCap2 === 'ellipse') {
       domCap2.innerHTML =
         '<span class="prop">left</span>:   <span class="val">' + x + 'px</span>;  <span class="cm">\u2190 centro x</span>\n' +
         '<span class="prop">top</span>:    <span class="val">' + y + 'px</span>;  <span class="cm">\u2190 centro y</span>\n' +
@@ -1137,6 +1144,35 @@ elemento.<span class="prop">style.width</span> = <span class="val">w</span> + <s
         '<span class="fn">ellipse</span>(<span class="val">' + x + '</span>, <span class="val">' + y + '</span>, <span class="val">' + w + '</span>, <span class="val">' + h + '</span>);\n' +
         '<span class="cm">//       \u2191     \u2191    \u2191    \u2191</span>\n' +
         '<span class="cm">//     centX centY  dW   dH</span>';
+    } else if (ultimaFormaCap2 === 'triangle') {
+      var x2 = x - Math.round(w / 2);
+      var y2 = y + h;
+      var x3 = x + Math.round(w / 2);
+      var y3 = y + h;
+      domCap2.innerHTML =
+        '<span class="prop">left</span>:   <span class="val">' + (x - Math.round(w / 2)) + 'px</span>;\n' +
+        '<span class="prop">top</span>:    <span class="val">' + y + 'px</span>;\n' +
+        '<span class="prop">width</span>:  <span class="val">' + w + 'px</span>;  <span class="prop">height</span>: <span class="val">' + h + 'px</span>;\n' +
+        '<span class="prop">clip-path</span>: <span class="fn">polygon</span>(<span class="val">50% 0%, 0% 100%, 100% 100%</span>);';
+
+      p5Cap2.innerHTML =
+        '<span class="fn">triangle</span>(\n' +
+        '  <span class="val">' + x + '</span>, <span class="val">' + y + '</span>,     <span class="cm">// v\u00e9rtice superior</span>\n' +
+        '  <span class="val">' + x2 + '</span>, <span class="val">' + y2 + '</span>,   <span class="cm">// v\u00e9rtice izq.</span>\n' +
+        '  <span class="val">' + x3 + '</span>, <span class="val">' + y3 + '</span>    <span class="cm">// v\u00e9rtice der.</span>\n);';
+    } else if (ultimaFormaCap2 === 'line') {
+      var x2l = x + w;
+      domCap2.innerHTML =
+        '<span class="prop">left</span>:   <span class="val">' + x + 'px</span>;  <span class="cm">\u2190 inicio x</span>\n' +
+        '<span class="prop">top</span>:    <span class="val">' + y + 'px</span>;  <span class="cm">\u2190 inicio y</span>\n' +
+        '<span class="prop">width</span>:  <span class="val">' + w + 'px</span>;  <span class="cm">\u2190 largo</span>\n' +
+        '<span class="prop">height</span>: <span class="val">3px</span>;      <span class="cm">\u2190 grosor fijo</span>';
+
+      p5Cap2.innerHTML =
+        '<span class="fn">line</span>(<span class="val">' + x + '</span>, <span class="val">' + y + '</span>, <span class="val">' + x2l + '</span>, <span class="val">' + y + '</span>);\n' +
+        '<span class="cm">//    \u2191    \u2191     \u2191     \u2191</span>\n' +
+        '<span class="cm">//   x1   y1    x2    y2</span>\n' +
+        '<span class="cm">// inicio \u2192\u2192\u2192\u2192\u2192\u2192  final</span>';
     }
   }
 
@@ -1196,6 +1232,46 @@ elemento.<span class="prop">style.width</span> = <span class="val">w</span> + <s
   botonCrearCirculo.addEventListener('click', crearCirculo);
 
   // ═══════════════════════════════════════
+  // Cap 2: Crear triángulo
+  // ═══════════════════════════════════════
+  var botonCrearTriangulo = document.getElementById('botonCrearTriangulo');
+
+  function crearTriangulo() {
+    var x = clamp(inputFormaX.value, 0, 590);
+    var y = clamp(inputFormaY.value, 0, 390);
+    var w = clamp(inputFormaW.value, 10, 300);
+    var h = clamp(inputFormaH.value, 10, 300);
+    ultimaFormaCap2 = 'triangle';
+    // Posicionar desde la punta superior: left = x - w/2, top = y
+    var forma = crearFormaBase('triangulo', x - Math.round(w / 2), y, w, h, false);
+
+    notaEstado.textContent    = 'triangle(' + x + ', ' + y + ', ...) — triángulo con punta en (' + x + ', ' + y + ').';
+    leyendaLienzo.textContent = 'Triángulo con punta en (' + x + ', ' + y + ') y base ' + w + '×' + h + '. En p5.js: triangle().';
+    actualizarCodigoCap2();
+    definirFormaActiva(forma, 'Triángulo activo. Usa los sliders del cap. 4 para cambiar tamaño.');
+  }
+  botonCrearTriangulo.addEventListener('click', crearTriangulo);
+
+  // ═══════════════════════════════════════
+  // Cap 2: Crear línea
+  // ═══════════════════════════════════════
+  var botonCrearLinea = document.getElementById('botonCrearLinea');
+
+  function crearLinea() {
+    var x = clamp(inputFormaX.value, 0, 590);
+    var y = clamp(inputFormaY.value, 0, 390);
+    var w = clamp(inputFormaW.value, 10, 300);
+    ultimaFormaCap2 = 'line';
+    var forma = crearFormaBase('linea', x, y, w, 3, false);
+
+    notaEstado.textContent    = 'line(' + x + ', ' + y + ', ' + (x + w) + ', ' + y + ') — línea horizontal.';
+    leyendaLienzo.textContent = 'Línea de (' + x + ', ' + y + ') a (' + (x + w) + ', ' + y + '). En p5.js: line().';
+    actualizarCodigoCap2();
+    definirFormaActiva(forma, 'Línea activa. Usa el slider de ancho del cap. 4 para cambiar largo.');
+  }
+  botonCrearLinea.addEventListener('click', crearLinea);
+
+  // ═══════════════════════════════════════
   // Cap 3: Color
   // ═══════════════════════════════════════
   function actualizarColor() {
@@ -1236,6 +1312,9 @@ elemento.<span class="prop">style.width</span> = <span class="val">w</span> + <s
       formaActiva.style.height = h + 'px';
       if (formaActiva.classList.contains('circulo')) {
         formaActiva.style.borderRadius = '50%';
+      }
+      if (formaActiva.classList.contains('linea')) {
+        formaActiva.style.height = '3px';
       }
       estadoForma.textContent = 'w = ' + w + ', h = ' + h + '. La forma responde en tiempo real.';
       notaEstado.textContent  = 'Variables: w=' + w + ', h=' + h + '. El dato controla la forma.';
