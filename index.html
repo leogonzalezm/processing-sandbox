@@ -862,6 +862,78 @@ elemento.<span class="prop">style.width</span> = <span class="val">w</span> + <s
             </div>
           </div>
 
+          <span class="codigo-titulo">Processing (Java) vs p5.js (JavaScript) — Tipado</span>
+          <div class="codigo-comparativa">
+            <div class="bloque-codigo">
+              <h4>Processing (Java) — tipado estático</h4>
+              <pre><span class="kw">int</span> <span class="val">x</span> = <span class="val">100</span>;       <span class="cm">// entero</span>
+<span class="kw">float</span> <span class="val">y</span> = <span class="val">3.14</span>;    <span class="cm">// decimal</span>
+<span class="kw">boolean</span> <span class="val">v</span> = <span class="val">true</span>; <span class="cm">// verdadero/falso</span>
+<span class="kw">String</span> <span class="val">s</span> = <span class="str">"hola"</span>; <span class="cm">// texto</span>
+<span class="kw">color</span> <span class="val">c</span> = <span class="fn">color</span>(<span class="val">255</span>, <span class="val">0</span>, <span class="val">0</span>);</pre>
+            </div>
+            <div class="bloque-codigo">
+              <h4>p5.js (JavaScript) — tipado dinámico</h4>
+              <pre><span class="kw">let</span> <span class="val">x</span> = <span class="val">100</span>;       <span class="cm">// Number (entero)</span>
+<span class="kw">let</span> <span class="val">y</span> = <span class="val">3.14</span>;      <span class="cm">// Number (decimal)</span>
+<span class="kw">let</span> <span class="val">v</span> = <span class="val">true</span>;      <span class="cm">// Boolean</span>
+<span class="kw">let</span> <span class="val">s</span> = <span class="str">"hola"</span>;    <span class="cm">// String</span>
+<span class="kw">let</span> <span class="val">c</span> = <span class="fn">color</span>(<span class="val">255</span>, <span class="val">0</span>, <span class="val">0</span>);</pre>
+            </div>
+          </div>
+
+          <span class="mapa-titulo">Equivalencia de tipos: Processing (Java) → p5.js (JavaScript)</span>
+          <table class="mapa-args">
+            <tr><th>Processing (Java)</th><th>p5.js (JavaScript)</th><th>Diferencia clave</th></tr>
+            <tr>
+              <td><code>int</code></td>
+              <td><code>Number</code></td>
+              <td>Java distingue enteros de decimales; JS usa <code>Number</code> para ambos</td>
+            </tr>
+            <tr>
+              <td><code>float</code></td>
+              <td><code>Number</code></td>
+              <td><code>float</code> almacena decimales; en JS todo número ya es decimal internamente</td>
+            </tr>
+            <tr>
+              <td><code>boolean</code></td>
+              <td><code>Boolean</code></td>
+              <td>Mismo concepto; en Java se escribe en minúscula (<code>boolean</code>)</td>
+            </tr>
+            <tr>
+              <td><code>String</code></td>
+              <td><code>String</code></td>
+              <td>Mismo concepto en ambos; Java usa solo <code>"comillas dobles"</code></td>
+            </tr>
+            <tr>
+              <td><code>color</code></td>
+              <td><code>p5.Color</code> (objeto)</td>
+              <td>En Java es un alias de <code>int</code> (ARGB); en JS es un objeto p5</td>
+            </tr>
+            <tr>
+              <td><code>void</code> (funciones)</td>
+              <td>No existe</td>
+              <td>Java exige declarar qué retorna; JS infiere automáticamente</td>
+            </tr>
+          </table>
+
+          <div class="codigo-comparativa">
+            <div class="bloque-codigo">
+              <h4>&#x26a0; int vs float en Processing</h4>
+              <pre><span class="kw">int</span> <span class="val">a</span> = <span class="val">7</span> / <span class="val">2</span>;    <span class="cm">// 3 (¡trunca!)</span>
+<span class="kw">float</span> <span class="val">b</span> = <span class="val">7.0</span> / <span class="val">2</span>; <span class="cm">// 3.5 (correcto)</span>
+<span class="cm">// En Processing, int/int = int</span>
+<span class="cm">// Usa float si necesitas decimales</span></pre>
+            </div>
+            <div class="bloque-codigo">
+              <h4>En p5.js no hay este problema</h4>
+              <pre><span class="kw">let</span> <span class="val">a</span> = <span class="val">7</span> / <span class="val">2</span>;    <span class="cm">// 3.5 (siempre decimal)</span>
+<span class="kw">let</span> <span class="val">b</span> = <span class="fn">Math.floor</span>(<span class="val">7</span> / <span class="val">2</span>); <span class="cm">// 3</span>
+<span class="cm">// JS siempre da decimal</span>
+<span class="cm">// Usa floor() si quieres entero</span></pre>
+            </div>
+          </div>
+
           <div class="ideas-clave">
             <h4>Ideas clave</h4>
             <ul>
@@ -874,6 +946,8 @@ elemento.<span class="prop">style.width</span> = <span class="val">w</span> + <s
               <li><strong>Object</strong> = pares clave:valor. Agrupa datos relacionados: <code>particula.x</code>, <code>particula.y</code>.</li>
               <li><code>typeof</code> te dice qué tipo tiene un valor: útil para depurar errores.</li>
               <li>Mezclar tipos sin querer es un <strong>error común</strong>: <code>"100" + 50</code> da <code>"10050"</code>, no <code>150</code>.</li>
+              <li>Processing (Java) usa <strong>tipado estático</strong>: debes escribir <code>int</code>, <code>float</code>, <code>String</code> al declarar. p5.js (JavaScript) usa <strong>tipado dinámico</strong>: solo escribes <code>let</code> y el tipo se deduce del valor.</li>
+              <li>En Processing, <code>int / int</code> = <code>int</code> (trunca decimales). Usa <code>float</code> para mantener precisión. En p5.js esto no ocurre.</li>
             </ul>
           </div>
         </div>
