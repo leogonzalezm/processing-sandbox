@@ -697,8 +697,10 @@ elemento.<span class="prop">style.width</span> = <span class="val">w</span> + <s
           <p class="cap-desc">
             Cada valor que usamos al programar tiene un <strong>tipo de dato</strong>.
             El tipo determina qué operaciones puedes hacer con él y cómo se comporta.
-            En JavaScript y p5.js los tres tipos fundamentales son: <strong>Number</strong>,
-            <strong>String</strong> y <strong>Boolean</strong>.
+            En JavaScript y p5.js existen tipos <em>primitivos</em> (<strong>Number</strong>,
+            <strong>String</strong>, <strong>Boolean</strong>, <strong>undefined</strong>,
+            <strong>null</strong>) y tipos <em>compuestos</em> (<strong>Array</strong>,
+            <strong>Object</strong>) que agrupan varios valores.
           </p>
 
           <div class="cap-controles" style="flex-direction:column; align-items:stretch; gap:8px;">
@@ -729,7 +731,7 @@ elemento.<span class="prop">style.width</span> = <span class="val">w</span> + <s
             </div>
           </div>
 
-          <span class="mapa-titulo">Tipos de datos fundamentales</span>
+          <span class="mapa-titulo">Tipos de datos — Tabla completa</span>
           <table class="mapa-args">
             <tr><th>Tipo</th><th>Qué almacena</th><th>Ejemplos</th><th>Uso en p5.js</th></tr>
             <tr>
@@ -750,9 +752,33 @@ elemento.<span class="prop">style.width</span> = <span class="val">w</span> + <s
               <td><code>true</code>, <code>false</code></td>
               <td>Condiciones: <code>if (mouseIsPressed)</code></td>
             </tr>
+            <tr>
+              <td><code>undefined</code></td>
+              <td>"Sin valor asignado" — valor por defecto de toda variable nueva</td>
+              <td><code>let x;</code> → <code>x</code> vale <code>undefined</code></td>
+              <td>Detectar si un argumento fue omitido: <code>if (valor === undefined)</code></td>
+            </tr>
+            <tr>
+              <td><code>null</code></td>
+              <td>"Vacío intencional" — el programador decide que no hay dato</td>
+              <td><code>let img = null;</code></td>
+              <td>Limpiar referencia: <code>img = null;</code> antes de cargar otra imagen</td>
+            </tr>
+            <tr>
+              <td><code>Array</code></td>
+              <td>Lista ordenada de valores (de cualquier tipo)</td>
+              <td><code>[10, 20, 30]</code>, <code>["a", "b"]</code></td>
+              <td>Colecciones de partículas, colores, posiciones: <code>vertices[i]</code></td>
+            </tr>
+            <tr>
+              <td><code>Object</code></td>
+              <td>Pares clave-valor que agrupan datos relacionados</td>
+              <td><code>{ x: 10, y: 20 }</code></td>
+              <td>Agrupar propiedades: <code>particula.x</code>, <code>particula.y</code></td>
+            </tr>
           </table>
 
-          <span class="codigo-titulo">Ejemplos interactivos por tipo</span>
+          <span class="codigo-titulo">Ejemplos por tipo — Primitivos</span>
           <div class="codigo-comparativa">
             <div class="bloque-codigo">
               <h4>Number — opera matemáticamente</h4>
@@ -778,10 +804,61 @@ elemento.<span class="prop">style.width</span> = <span class="val">w</span> + <s
 }</pre>
             </div>
             <div class="bloque-codigo">
+              <h4>undefined — variable sin valor</h4>
+              <pre><span class="kw">let</span> <span class="val">z</span>;              <span class="cm">// no asignamos nada</span>
+<span class="fn">print</span>(<span class="val">z</span>);           <span class="cm">// undefined</span>
+<span class="fn">print</span>(<span class="val">z</span> + <span class="val">10</span>);     <span class="cm">// NaN (no es número)</span>
+<span class="cm">// Siempre asigna un valor inicial</span></pre>
+            </div>
+          </div>
+          <div class="codigo-comparativa">
+            <div class="bloque-codigo">
+              <h4>null — vacío intencional</h4>
+              <pre><span class="kw">let</span> <span class="val">img</span> = <span class="val">null</span>;     <span class="cm">// aún no hay imagen</span>
+<span class="val">img</span> = <span class="fn">loadImage</span>(<span class="str">"foto.png"</span>);
+<span class="cm">// null indica "todavía no existe"</span>
+<span class="cm">// Distinto de undefined ("olvidé asignar")</span></pre>
+            </div>
+            <div class="bloque-codigo">
               <h4>&#x26a0; Error común: tipo incorrecto</h4>
               <pre><span class="kw">let</span> <span class="val">x</span> = <span class="str">"100"</span>; <span class="cm">// ¡Es String, no Number!</span>
 <span class="kw">let</span> <span class="val">y</span> = <span class="val">x</span> + <span class="val">50</span>;  <span class="cm">// "10050" (concatenó)</span>
 <span class="cm">// Solución: Number("100") → 100</span></pre>
+            </div>
+          </div>
+
+          <span class="codigo-titulo">Ejemplos por tipo — Compuestos</span>
+          <div class="codigo-comparativa">
+            <div class="bloque-codigo">
+              <h4>Array — lista ordenada de valores</h4>
+              <pre><span class="kw">let</span> <span class="val">colores</span> = [<span class="str">"rojo"</span>, <span class="str">"verde"</span>, <span class="str">"azul"</span>];
+<span class="fn">print</span>(<span class="val">colores</span>[<span class="val">0</span>]);  <span class="cm">// "rojo"</span>
+<span class="fn">print</span>(<span class="val">colores</span>.<span class="prop">length</span>); <span class="cm">// 3</span>
+<span class="cm">// Los índices empiezan en 0</span></pre>
+            </div>
+            <div class="bloque-codigo">
+              <h4>Array en p5.js — múltiples posiciones</h4>
+              <pre><span class="kw">let</span> <span class="val">xs</span> = [<span class="val">50</span>, <span class="val">150</span>, <span class="val">250</span>];
+<span class="kw">for</span> (<span class="kw">let</span> <span class="val">i</span> = <span class="val">0</span>; <span class="val">i</span> &lt; <span class="val">xs</span>.<span class="prop">length</span>; <span class="val">i</span>++) {
+  <span class="fn">ellipse</span>(<span class="val">xs</span>[<span class="val">i</span>], <span class="val">200</span>, <span class="val">30</span>, <span class="val">30</span>);
+} <span class="cm">// Dibuja 3 círculos</span></pre>
+            </div>
+          </div>
+          <div class="codigo-comparativa">
+            <div class="bloque-codigo">
+              <h4>Object — agrupar datos relacionados</h4>
+              <pre><span class="kw">let</span> <span class="val">particula</span> = {
+  <span class="prop">x</span>: <span class="val">100</span>,  <span class="prop">y</span>: <span class="val">200</span>,
+  <span class="prop">tam</span>: <span class="val">30</span>, <span class="prop">color</span>: <span class="str">"#ff0"</span>
+};</pre>
+            </div>
+            <div class="bloque-codigo">
+              <h4>Object en p5.js — usar propiedades</h4>
+              <pre><span class="fn">fill</span>(<span class="val">particula</span>.<span class="prop">color</span>);
+<span class="fn">ellipse</span>(
+  <span class="val">particula</span>.<span class="prop">x</span>, <span class="val">particula</span>.<span class="prop">y</span>,
+  <span class="val">particula</span>.<span class="prop">tam</span>, <span class="val">particula</span>.<span class="prop">tam</span>
+);</pre>
             </div>
           </div>
 
@@ -791,6 +868,10 @@ elemento.<span class="prop">style.width</span> = <span class="val">w</span> + <s
               <li><strong>Number</strong> = datos para posiciones, tamaños y colores. Se puede operar matemáticamente.</li>
               <li><strong>String</strong> = texto entre comillas. El <code>+</code> con strings <em>concatena</em> en vez de sumar.</li>
               <li><strong>Boolean</strong> = <code>true</code> o <code>false</code>. Esencial para decisiones con <code>if</code>.</li>
+              <li><strong>undefined</strong> = variable declarada pero sin valor. <code>let x;</code> → <code>x</code> es <code>undefined</code>.</li>
+              <li><strong>null</strong> = vacío a propósito. El programador dice "aquí no hay nada aún".</li>
+              <li><strong>Array</strong> = lista con índice numérico (<code>[0]</code>, <code>[1]</code>…). Ideal para colecciones de formas o posiciones.</li>
+              <li><strong>Object</strong> = pares clave:valor. Agrupa datos relacionados: <code>particula.x</code>, <code>particula.y</code>.</li>
               <li><code>typeof</code> te dice qué tipo tiene un valor: útil para depurar errores.</li>
               <li>Mezclar tipos sin querer es un <strong>error común</strong>: <code>"100" + 50</code> da <code>"10050"</code>, no <code>150</code>.</li>
             </ul>
@@ -1117,18 +1198,27 @@ elemento.<span class="prop">style.width</span> = <span class="val">w</span> + <s
     var valor, tipo, representacion;
 
     // Detectar el tipo según lo que escribió el usuario
-    if (raw === 'true' || raw === 'false') {
-      valor = raw === 'true';
+    if (raw === 'undefined') {
+      tipo = 'undefined';
+      representacion = 'undefined';
+    } else if (raw === 'null') {
+      tipo = 'null';
+      representacion = 'null';
+    } else if (raw === 'true' || raw === 'false') {
       tipo  = 'boolean';
       representacion = raw;
     } else if (raw === '' || raw === '""' || raw === "''") {
-      valor = '';
       tipo  = 'string';
       representacion = '""';
+    } else if (/^\[.*\]$/.test(raw)) {
+      tipo = 'array';
+      representacion = raw;
+    } else if (/^\{.*\}$/.test(raw)) {
+      tipo = 'object';
+      representacion = raw;
     } else if (!isNaN(Number(raw)) && raw !== '') {
-      valor = Number(raw);
       tipo  = 'number';
-      representacion = String(valor);
+      representacion = String(Number(raw));
     } else {
       // Quitar comillas si las escribió
       valor = raw.replace(/^["']|["']$/g, '');
@@ -1136,29 +1226,41 @@ elemento.<span class="prop">style.width</span> = <span class="val">w</span> + <s
       representacion = '"' + valor + '"';
     }
 
-    var emoji = tipo === 'number' ? '🔢' : tipo === 'string' ? '📝' : '✅';
-    var nombre = tipo === 'number' ? 'Number (Número)' : tipo === 'string' ? 'String (Texto)' : 'Boolean (Verdadero/Falso)';
-    var explicacion = tipo === 'number'
-      ? 'Se puede usar en operaciones matemáticas: sumar, restar, posicionar.'
-      : tipo === 'string'
-      ? 'Es texto. El + concatena en lugar de sumar. Útil para mostrar mensajes.'
-      : 'Solo puede ser true o false. Se usa en condicionales (if).';
+    var infoTipos = {
+      number:    { emoji: '\uD83D\uDD22', nombre: 'Number (N\u00famero)',          explicacion: 'Se puede usar en operaciones matem\u00e1ticas: sumar, restar, posicionar.',                  typeof_: 'number'  },
+      string:    { emoji: '\uD83D\uDCDD', nombre: 'String (Texto)',            explicacion: 'Es texto. El + concatena en lugar de sumar. \u00DAtil para mostrar mensajes.',            typeof_: 'string'  },
+      boolean:   { emoji: '\u2705',       nombre: 'Boolean (Verdadero/Falso)', explicacion: 'Solo puede ser true o false. Se usa en condicionales (if).',                          typeof_: 'boolean' },
+      undefined: { emoji: '\u2753',       nombre: 'undefined (Sin valor)',     explicacion: 'La variable existe pero no tiene ning\u00fan valor asignado. Causa errores si se opera.',  typeof_: 'undefined' },
+      null:      { emoji: '\uD83D\uDEAB', nombre: 'null (Vac\u00edo intencional)',  explicacion: 'El programador decidi\u00f3 que a\u00fan no hay valor. typeof devuelve \"object\" (peculiaridad hist\u00f3rica de JS).', typeof_: 'object' },
+      array:     { emoji: '\uD83D\uDCCB', nombre: 'Array (Lista)',             explicacion: 'Colecci\u00f3n ordenada de valores, accesibles por \u00edndice: [0], [1], [2]\u2026',            typeof_: 'object' },
+      object:    { emoji: '\uD83D\uDCE6', nombre: 'Object (Objeto)',           explicacion: 'Agrupa datos con nombre (clave:valor). typeof devuelve \"object\".',                     typeof_: 'object' }
+    };
+
+    var info = infoTipos[tipo];
+    var emoji = info.emoji;
+    var nombre = info.nombre;
+    var explicacion = info.explicacion;
+    var typeofResult = info.typeof_;
 
     resultadoTipo.innerHTML = emoji + ' <strong>' + nombre + '</strong> — ' + explicacion;
 
+    var spanDato = tipo === 'string'
+      ? '<span class="str">' + representacion + '</span>'
+      : '<span class="val">' + representacion + '</span>';
+
+    var notaExtra = '';
+    if (tipo === 'null')  notaExtra = '\n<span class="cm">// Curiosidad: typeof null === \"object\" (bug hist\u00f3rico de JS)</span>';
+    if (tipo === 'array') notaExtra = '\n<span class="cm">// Array.isArray(dato) === true</span>';
+
     domCap5.innerHTML =
-      '<span class="kw">let</span> <span class="val">dato</span> = ' +
-      (tipo === 'string' ? '<span class="str">' + representacion + '</span>' : '<span class="val">' + representacion + '</span>') + ';\n' +
-      '<span class="fn">typeof</span> <span class="val">dato</span>; <span class="cm">// "' + tipo + '"</span>\n' +
-      '<span class="cm">// typeof devuelve el tipo como texto</span>';
+      '<span class="kw">let</span> <span class="val">dato</span> = ' + spanDato + ';\n' +
+      '<span class="fn">typeof</span> <span class="val">dato</span>; <span class="cm">// \"' + typeofResult + '\"</span>' + notaExtra;
 
     p5Cap5.innerHTML =
-      '<span class="kw">let</span> <span class="val">dato</span> = ' +
-      (tipo === 'string' ? '<span class="str">' + representacion + '</span>' : '<span class="val">' + representacion + '</span>') + ';\n' +
-      '<span class="fn">print</span>(<span class="fn">typeof</span> <span class="val">dato</span>); <span class="cm">// "' + tipo + '"</span>\n' +
-      '<span class="cm">// Mismo concepto, misma sintaxis</span>';
+      '<span class="kw">let</span> <span class="val">dato</span> = ' + spanDato + ';\n' +
+      '<span class="fn">print</span>(<span class="fn">typeof</span> <span class="val">dato</span>); <span class="cm">// \"' + typeofResult + '\"</span>' + notaExtra;
 
-    notaEstado.textContent = 'typeof ' + representacion + ' → "' + tipo + '". ' + explicacion;
+    notaEstado.textContent = 'typeof ' + representacion + ' \u2192 \"' + typeofResult + '\". ' + explicacion;
   }
 
   botonEvalTipo.addEventListener('click', evaluarTipo);
