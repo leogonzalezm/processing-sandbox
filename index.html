@@ -577,11 +577,13 @@
             El color en p5.js es un <strong>estado</strong>: llamas a <code>fill(r, g, b)</code>
             <em>antes</em> de dibujar y todo lo que venga después usa ese color.
             En CSS es un <strong>atributo</strong> del elemento: lo cambias directamente.
+            Elige un color <strong>antes</strong> de crear una forma, o selecciona una forma existente
+            y cámbiale el color individualmente.
           </p>
 
           <div class="cap-controles">
             <input type="color" id="selectorColor" value="#c84c36" aria-label="Seleccionar color" />
-            <span style="color:var(--texto-suave); font-size:0.9rem;">Elige un color → se aplica a todas las formas del lienzo.</span>
+            <span style="color:var(--texto-suave); font-size:0.9rem;">Elige un color → se aplica a la <strong>forma activa</strong> o a la próxima que crees.</span>
           </div>
 
           <span class="codigo-titulo">Comparación de código</span>
@@ -629,6 +631,7 @@
               <li><code>fill()</code> no dibuja nada: solo cambia el <strong>estado</strong> del pincel.</li>
               <li>En DOM cambias un atributo de un objeto <em>ya existente</em>.</li>
               <li>En p5.js el <strong>orden importa</strong>: <code>fill()</code> debe ir <em>antes</em> del dibujo.</li>
+              <li>Cada forma puede tener su propio color: elige antes de crear, o selecciona una y cámbialo.</li>
             </ul>
           </div>
         </div>
@@ -1063,7 +1066,24 @@ elemento.<span class="prop">style.width</span> = <span class="val">w</span> + <s
     if (formaActiva) {
       formaActiva.classList.add('activa');
       estadoForma.textContent = descripcion;
+      // Sincronizar el selector de color con el color de la forma activa
+      var bgColor = formaActiva.style.backgroundColor;
+      if (bgColor) {
+        selectorColor.value = rgbAHex(bgColor);
+        colorActual = selectorColor.value;
+      }
     }
+  }
+
+  // Convierte "rgb(r, g, b)" o hex a formato #rrggbb
+  function rgbAHex(color) {
+    if (color.charAt(0) === '#') return color;
+    var partes = color.match(/\d+/g);
+    if (!partes || partes.length < 3) return colorActual;
+    var r = parseInt(partes[0]).toString(16).padStart(2, '0');
+    var g = parseInt(partes[1]).toString(16).padStart(2, '0');
+    var b = parseInt(partes[2]).toString(16).padStart(2, '0');
+    return '#' + r + g + b;
   }
 
   // ── Fábrica de formas ──
@@ -1278,24 +1298,35 @@ elemento.<span class="prop">style.width</span> = <span class="val">w</span> + <s
   function actualizarColor() {
     colorActual = selectorColor.value;
     var rgb = hexARgb(colorActual);
-    var formas = lienzoDom.querySelectorAll('.forma');
-    for (var i = 0; i < formas.length; i++) {
-      formas[i].style.backgroundColor = colorActual;
+
+    // Solo cambia la forma activa (como fill() en p5.js: afecta lo que viene después)
+    if (formaActiva) {
+      formaActiva.style.backgroundColor = colorActual;
+
+      domCap3.innerHTML =
+        '<span class="prop">background-color</span>: <span class="val">rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ')</span>;\n' +
+        '<span class="cm">/* Se aplica directamente al elemento activo */</span>\n' +
+        '<span class="cm">/* Cada forma guarda su propio color */</span>';
+
+      p5Cap3.innerHTML =
+        '<span class="fn">fill</span>(<span class="val">' + rgb.r + '</span>, <span class="val">' + rgb.g + '</span>, <span class="val">' + rgb.b + '</span>);   <span class="cm">\u2190 cambiar estado</span>\n' +
+        '<span class="fn">rect</span>(<span class="val">x</span>, <span class="val">y</span>, <span class="val">w</span>, <span class="val">h</span>); <span class="cm">\u2190 dibuja con ese color</span>\n' +
+        '<span class="cm">// fill() afecta solo lo que viene despu\u00e9s</span>';
+
+      notaEstado.textContent = 'Color de forma activa: rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ').';
+    } else {
+      domCap3.innerHTML =
+        '<span class="prop">background-color</span>: <span class="val">rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ')</span>;\n' +
+        '<span class="cm">/* Color preparado para la pr\u00f3xima forma */</span>\n' +
+        '<span class="cm">/* Cada forma mantiene su color individual */</span>';
+
+      p5Cap3.innerHTML =
+        '<span class="fn">fill</span>(<span class="val">' + rgb.r + '</span>, <span class="val">' + rgb.g + '</span>, <span class="val">' + rgb.b + '</span>);   <span class="cm">\u2190 llamar ANTES</span>\n' +
+        '<span class="fn">rect</span>(<span class="val">x</span>, <span class="val">y</span>, <span class="val">w</span>, <span class="val">h</span>); <span class="cm">\u2190 dibuja con ese color</span>\n' +
+        '<span class="cm">// fill() cambia el ESTADO gr\u00e1fico</span>';
+
+      notaEstado.textContent = 'Color preparado: rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + '). La pr\u00f3xima forma usar\u00e1 este color.';
     }
-
-    domCap3.innerHTML =
-      '<span class="prop">background-color</span>: <span class="val">rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ')</span>;\n' +
-      '<span class="cm">/* Se aplica directamente al elemento */</span>\n' +
-      '<span class="cm">/* Cambia un atributo del objeto existente */</span>';
-
-    p5Cap3.innerHTML =
-      '<span class="fn">fill</span>(<span class="val">' + rgb.r + '</span>, <span class="val">' + rgb.g + '</span>, <span class="val">' + rgb.b + '</span>);   <span class="cm">\u2190 llamar ANTES</span>\n' +
-      '<span class="fn">rect</span>(<span class="val">x</span>, <span class="val">y</span>, <span class="val">w</span>, <span class="val">h</span>); <span class="cm">\u2190 dibuja con ese color</span>\n' +
-      '<span class="cm">// fill() cambia el ESTADO gr\u00e1fico</span>';
-
-    notaEstado.textContent = formas.length > 0
-      ? 'Color: rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + '). Todas las formas cambiaron.'
-      : 'Color preparado. Crea una forma para ver el efecto.';
   }
   selectorColor.addEventListener('input', actualizarColor);
 
