@@ -421,7 +421,7 @@
         <button class="pestana activa" data-cap="1">1. Coordenadas<small>Punto &amp; Argumentos</small></button>
         <button class="pestana"        data-cap="2">2. Primitivas<small>Rect &amp; Ellipse</small></button>
         <button class="pestana"        data-cap="3">3. Color<small>Fill &amp; Estado</small></button>
-        <button class="pestana"        data-cap="4">4. Variables<small>Sliders &amp; Datos</small></button>
+          <button class="pestana"        data-cap="4">4. Variables<small>Operadores &amp; Dibujo</small></button>
         <button class="pestana"        data-cap="5">5. Tipos<small>Number, String&hellip;</small></button>
       </nav>
 
@@ -636,12 +636,14 @@
           </div>
         </div>
 
-        <!-- ══════════════ Cap 4: Variables ══════════════ -->
+        <!-- ══════════════ Cap 4: Variables, operadores y dibujo algorítmico ══════════════ -->
         <div class="cap" id="cap4">
           <p class="cap-desc">
             Una <em>variable</em> guarda un valor que puede cambiar. Los sliders convierten
-            un número abstracto en una transformación visual. Mueve los sliders para ver cómo
-            el <strong>dato controla la forma</strong> en tiempo real.
+            un número abstracto en una transformación visual. Los <strong>operadores</strong>
+            (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>) permiten modificar ese valor,
+            y con esas reglas podemos construir <strong>dibujo algorítmico</strong>: formas que se organizan
+            a partir de una instrucción repetible.
           </p>
 
           <div class="cap-controles" style="flex-direction:column; align-items:stretch;">
@@ -693,12 +695,22 @@ elemento.<span class="prop">style.width</span> = <span class="val">w</span> + <s
             </tr>
           </table>
 
+          <div class="ideas-clave" style="margin-bottom: 14px;">
+            <h4>Variables, operadores y dibujo algorítmico</h4>
+            <ul>
+              <li>Una variable puede participar en operaciones como <code>w * 2</code> o <code>h + 20</code> para generar nuevos valores.</li>
+              <li>Un operador transforma un dato: sumar desplaza, restar acerca, multiplicar escala y dividir reduce.</li>
+              <li>El dibujo algorítmico aparece cuando una regla numérica se repite para producir varias formas o patrones.</li>
+            </ul>
+          </div>
+
           <div class="ideas-clave">
             <h4>Ideas clave</h4>
             <ul>
               <li>Una <strong>variable</strong> = nombre + valor que puede cambiar.</li>
               <li>Los sliders hacen tangible la idea de <em>dato dinámico</em>.</li>
               <li>Cuando una variable alimenta un argumento, el dibujo se vuelve <strong>interactivo</strong>.</li>
+              <li>Cuando además aplicamos operadores, el dibujo puede seguir una <strong>regla visual</strong> y convertirse en un sistema.</li>
             </ul>
           </div>
         </div>
