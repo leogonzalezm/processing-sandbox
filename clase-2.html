@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clase 2 — Estructuras básicas</title>
+  <style>
+    :root {
+      --texto: #2b2b2b;
+      --texto-suave: #6b655c;
+      --acento: #c84c36;
+      --acento-oscuro: #8e2f1f;
+      --borde: #cdbfa9;
+      --lienzo: #e8e8e8;
+      --grid-major: rgba(0,0,0,0.13);
+      --grid-minor: rgba(0,0,0,0.05);
+      --codigo-fondo: #1e2330;
+      --codigo-texto: #e8e8e8;
+      --token-kw: #ffcc66;
+      --token-val: #8bd3dd;
+      --token-fn: #ffd280;
+      --token-cm: #8f9bb3;
+      --token-prop: #f78c6c;
+      --token-str: #c3e88d;
+      --panel-bg: rgba(255,250,242,0.92);
+      --sombra: 0 12px 38px rgba(85,58,30,0.11);
+      --radio: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: "Segoe UI", "Trebuchet MS", system-ui, sans-serif;
+      color: var(--texto);
+      background:
+        radial-gradient(ellipse at 10% 0%, rgba(255,255,255,0.85), transparent 40%),
+        linear-gradient(135deg, #f5ead7 0%, #f1f0eb 50%, #e4ece9 100%);
+    }
+
+    .app {
+      height: 100vh;
+      max-width: 1520px;
+      margin: 0 auto;
+      padding: 14px;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 12px;
+    }
+
+    /* ── Cabecera ── */
+    .cabecera {
+      display: flex;
+      align-items: baseline;
+      gap: 18px;
+      padding: 12px 18px;
+      background: var(--panel-bg);
+      border: 1px solid rgba(205,191,169,0.7);
+      border-radius: var(--radio);
+      box-shadow: var(--sombra);
+      backdrop-filter: blur(8px);
+    }
+    .cabecera h1 { font-size: 1.35rem; letter-spacing: 0.02em; white-space: nowrap; }
+    .cabecera p  { color: var(--texto-suave); font-size: 0.92rem; line-height: 1.4; }
+    .cabecera-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .cabecera-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(200,76,54,0.22);
+      background: rgba(200,76,54,0.08);
+      color: var(--acento-oscuro);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 700;
+      transition: transform 100ms, background 120ms;
+    }
+    .cabecera-link:hover {
+      transform: translateY(-1px);
+      background: rgba(200,76,54,0.14);
+    }
+    .cabecera-link.activa {
+      background: linear-gradient(135deg, var(--acento), var(--acento-oscuro));
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 6px 16px rgba(200,76,54,0.22);
+    }
+
+    /* ── Área principal ── */
+    .principal {
+      display: grid;
+      grid-template-columns: min-content minmax(380px, 1fr);
+      gap: 14px;
+      min-height: 0;
+    }
+
+    .col-lienzo {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 0;
+      max-width: 604px;
+    }
+
+    .lienzo-titulo {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--texto-suave);
+      padding-left: 4px;
+    }
+
+    .lienzo-marco {
+      width: min-content;
+      border: 2px solid #aaa;
+      border-radius: var(--radio);
+      overflow: hidden;
+      background: #fff;
+      box-shadow: var(--sombra);
+      flex: 0 0 auto;
+    }
+
+    .lienzo-dom {
+      position: relative;
+      width: 600px;
+      height: 400px;
+      background:
+        linear-gradient(var(--grid-major) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-major) 1px, transparent 1px),
+        linear-gradient(var(--grid-minor) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-minor) 1px, transparent 1px),
+        var(--lienzo);
+      background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+    }
+
+    .etiquetas-coordenadas {
+      position: absolute; inset: 0;
+      pointer-events: none;
+      font-size: 11px;
+      color: rgba(0,0,0,0.42);
+    }
+    .etiqueta-coord {
+      position: absolute;
+      transform: translate(5px,5px);
+      padding: 1px 5px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.5);
+      white-space: nowrap;
+    }
+
+    /* ── Formas ── */
+    .forma {
+      position: absolute;
+      background-color: var(--acento);
+      transition: width 100ms, height 100ms, background-color 140ms, left 100ms, top 100ms;
+    }
+    .forma.activa { outline: 3px dashed rgba(0,0,0,0.4); outline-offset: 4px; }
+    .punto    { width:10px; height:10px; border-radius:50%; transform:translate(-50%,-50%); }
+    .cuadrado { width:80px; height:80px; }
+    .circulo  { width:50px; height:50px; border-radius:50%; transform:translate(-50%,-50%); }
+    .triangulo{ clip-path:polygon(50% 0%, 0% 100%, 100% 100%); }
+    .linea    { height:3px; border-radius:2px; }
+
+    /* ── Leyenda ── */
+    .leyenda-lienzo {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: var(--radio);
+      background: var(--panel-bg);
+      border: 1px solid rgba(205,191,169,0.7);
+      color: var(--texto-suave);
+      font-size: 0.88rem;
+      line-height: 1.4;
+      box-shadow: var(--sombra);
+    }
+    .leyenda-icono { flex: 0 0 auto; font-size: 1.1rem; }
+
+    /* ── Panel de capítulos ── */
+    .panel-capitulos {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      background: var(--panel-bg);
+      border: 1px solid rgba(205,191,169,0.7);
+      border-radius: var(--radio);
+      box-shadow: var(--sombra);
+      backdrop-filter: blur(8px);
+      overflow: hidden;
+    }
+
+    .pestanas {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      border-bottom: 1px solid rgba(205,191,169,0.6);
+      flex: 0 0 auto;
+    }
+    .pestana {
+      padding: 12px 6px;
+      text-align: center;
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: var(--texto-suave);
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      box-shadow: none;
+      transition: background 120ms, color 120ms;
+      line-height: 1.25;
+    }
+    .pestana:hover { background: rgba(200,76,54,0.06); }
+    .pestana.activa {
+      color: var(--acento-oscuro);
+      background: rgba(200,76,54,0.10);
+      box-shadow: inset 0 -3px 0 var(--acento);
+    }
+    .pestana small {
+      display: block; font-weight: 400; margin-top: 2px;
+      font-size: 0.78rem; color: var(--texto-suave); opacity: 0.8;
+    }
+
+    .capitulo-contenido {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      padding: 16px;
+    }
+    .capitulo-contenido::-webkit-scrollbar { width: 8px; }
+    .capitulo-contenido::-webkit-scrollbar-thumb {
+      background: rgba(141,115,87,0.3); border-radius: 999px;
+    }
+
+    .cap { display: none; }
+    .cap.visible { display: block; }
+    .cap-desc { color: var(--texto-suave); line-height: 1.5; margin-bottom: 14px; font-size: 0.93rem; }
+
+    .cap-controles {
+      display: flex; flex-wrap: wrap; align-items: center;
+      gap: 10px; margin-bottom: 16px;
+    }
+
+    /* ── Controles de posición (inputs numéricos) ── */
+    .controles-pos {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+      width: 100%; margin-bottom: 6px;
+    }
+    .controles-pos label {
+      display: flex; align-items: center; gap: 5px;
+      font-weight: 700; font-size: 0.88rem;
+    }
+    input[type="number"] {
+      width: 72px; padding: 6px 8px;
+      border: 2px solid var(--borde);
+      border-radius: 8px;
+      font: inherit; font-size: 0.88rem;
+      text-align: center;
+      background: #fff;
+    }
+    input[type="number"]:focus {
+      outline: none; border-color: var(--acento);
+    }
+
+    button.accion {
+      border: none; border-radius: 999px;
+      padding: 10px 18px; font: inherit; font-size: 0.92rem; font-weight: 700;
+      color: white;
+      background: linear-gradient(135deg, var(--acento), var(--acento-oscuro));
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(200,76,54,0.22);
+      transition: transform 100ms, filter 100ms;
+    }
+    button.accion:hover { transform: translateY(-1px); filter: brightness(1.06); }
+
+    .boton-limpiar {
+      background: linear-gradient(135deg, #6b655c, #4a453e);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      font-size: 0.84rem;
+      padding: 8px 16px;
+      align-self: flex-start;
+    }
+
+    input[type="color"] {
+      width: 52px; height: 42px;
+      border: 2px solid var(--borde);
+      border-radius: 10px;
+      background: transparent;
+      cursor: pointer; padding: 2px;
+    }
+
+    .rango-grupo { width: 100%; margin-bottom: 8px; }
+    .rango-grupo label {
+      display: flex; justify-content: space-between;
+      font-weight: 700; font-size: 0.9rem; margin-bottom: 4px;
+    }
+    input[type="range"] { width: 100%; accent-color: var(--acento); }
+
+    .estado-info {
+      width: 100%; padding: 8px 12px; border-radius: 10px;
+      background: rgba(200,76,54,0.06);
+      color: var(--texto-suave); font-size: 0.87rem; line-height: 1.35;
+    }
+
+    /* ── Código comparativo ── */
+    .codigo-titulo {
+      display: block;
+      font-size: 0.78rem; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--texto-suave);
+      margin-bottom: 8px;
+    }
+    .codigo-comparativa {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 8px; margin-bottom: 14px;
+    }
+    .bloque-codigo {
+      border-radius: 12px; overflow: hidden;
+      background: var(--codigo-fondo);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .bloque-codigo h4 {
+      margin: 0; padding: 7px 12px;
+      font-size: 0.78rem; font-weight: 700;
+      letter-spacing: 0.04em; color: #fff4d6;
+      background: rgba(255,255,255,0.04);
+    }
+    pre {
+      margin: 0; padding: 10px 12px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.84rem; line-height: 1.55;
+      color: var(--codigo-texto); white-space: pre-wrap; overflow-x: auto;
+    }
+
+    .kw   { color: var(--token-kw);  }
+    .val  { color: var(--token-val);  }
+    .fn   { color: var(--token-fn);   }
+    .cm   { color: var(--token-cm);   }
+    .prop { color: var(--token-prop); }
+    .str  { color: var(--token-str);  }
+
+    /* ── Mapa de argumentos ── */
+    .mapa-args {
+      width: 100%; border-collapse: collapse;
+      margin-bottom: 14px; font-size: 0.84rem;
+      border-radius: 10px; overflow: hidden;
+      border: 1px solid rgba(205,191,169,0.5);
+    }
+    .mapa-args th {
+      text-align: left; padding: 7px 10px;
+      background: rgba(200,76,54,0.09);
+      color: var(--acento-oscuro);
+      font-size: 0.76rem; text-transform: uppercase;
+      letter-spacing: 0.06em; font-weight: 700;
+    }
+    .mapa-args td {
+      padding: 6px 10px;
+      border-bottom: 1px solid rgba(205,191,169,0.3);
+      color: var(--texto-suave);
+    }
+    .mapa-args tr:last-child td { border-bottom: none; }
+    .mapa-args code {
+      background: rgba(30,35,48,0.08);
+      padding: 1px 5px; border-radius: 4px;
+      font-size: 0.84rem;
+    }
+    .mapa-titulo {
+      display: block;
+      font-size: 0.78rem; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--acento-oscuro);
+      margin-bottom: 6px; font-weight: 700;
+    }
+
+    /* ── Ideas clave ── */
+    .ideas-clave {
+      padding: 10px 14px; border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.7), rgba(240,228,210,0.4));
+      border: 1px solid rgba(205,191,169,0.7);
+    }
+    .ideas-clave h4 {
+      font-size: 0.82rem; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--acento-oscuro);
+      margin-bottom: 6px;
+    }
+    .ideas-clave ul {
+      margin: 0; padding-left: 18px;
+      color: var(--texto-suave); font-size: 0.88rem; line-height: 1.5;
+    }
+
+    /* ── Barra de estado ── */
+    .barra-estado {
+      padding: 10px 16px; border-radius: var(--radio);
+      background: var(--panel-bg);
+      border: 1px solid rgba(205,191,169,0.7);
+      box-shadow: var(--sombra);
+      color: var(--texto-suave); font-size: 0.88rem; line-height: 1.4;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .barra-estado strong { color: var(--acento-oscuro); white-space: nowrap; }
+
+    /* ── Responsive ── */
+    @media (max-width: 1100px) {
+      body { overflow: auto; }
+      .app { height: auto; min-height: 100vh; }
+      .principal { grid-template-columns: 1fr; }
+      .col-lienzo { align-items: center; max-width: none; }
+    }
+    @media (max-width: 660px) {
+      .cabecera { flex-direction: column; gap: 6px; }
+      .cabecera h1 { font-size: 1.15rem; }
+      .cabecera-actions { margin-left: 0; width: 100%; }
+      .lienzo-dom { width: 100%; height: auto; aspect-ratio: 3/2; }
+      .lienzo-marco { width: 100% !important; }
+      .pestana { font-size: 0.76rem; padding: 10px 4px; }
+      .codigo-comparativa { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<main class="app">
+  <header class="cabecera">
+    <h1>Clase 2</h1>
+    <p>Estructuras básicas: <strong>primitivas 2D, coordenadas y colores</strong>. Esta herramienta mantiene el formato interactivo para comparar cómo se expresan las mismas ideas visuales en <strong>DOM / CSS</strong> y en <strong>Processing / p5.js</strong>.</p>
+    <div class="cabecera-actions">
+      <a class="cabecera-link" href="index.html">Índice del curso</a>
+      <a class="cabecera-link activa" href="clase-2.html">Clase 2</a>
+      <a class="cabecera-link" href="clase-3.html">Clase 3</a>
+    </div>
+  </header>
+
+  <section class="principal">
+    <!-- ── Lienzo ── -->
+    <div class="col-lienzo">
+      <span class="lienzo-titulo">Lienzo DOM — 600 × 400 px</span>
+      <div class="lienzo-marco">
+        <div class="lienzo-dom" id="lienzoDom">
+          <div class="etiquetas-coordenadas" id="etiquetasCoord"></div>
+        </div>
+      </div>
+      <div class="leyenda-lienzo">
+        <span class="leyenda-icono">&#x1f4a1;</span>
+        <span id="leyendaLienzo">Aquí aparecerán las formas. Cada elemento es un &lt;div&gt; posicionado con CSS.</span>
+      </div>
+      <button class="accion boton-limpiar" id="botonDeshacer" style="background:linear-gradient(135deg,#4a6fa5,#2d4a7a);">&#x21a9; Deshacer</button>
+      <button class="accion boton-limpiar" id="botonLimpiar">Limpiar Lienzo</button>
+    </div>
+
+    <!-- ── Panel de capítulos ── -->
+    <div class="panel-capitulos">
+      <nav class="pestanas">
+        <button class="pestana activa" data-cap="1">1. Coordenadas<small>Punto &amp; Argumentos</small></button>
+        <button class="pestana"        data-cap="2">2. Primitivas<small>Rect &amp; Ellipse</small></button>
+        <button class="pestana"        data-cap="3">3. Color<small>Fill &amp; Estado</small></button>
+          <button class="pestana"        data-cap="4">4. Variables<small>Operadores &amp; Dibujo</small></button>
+        <button class="pestana"        data-cap="5">5. Tipos<small>Number, String&hellip;</small></button>
+      </nav>
+
+      <div class="capitulo-contenido">
+
+        <!-- ══════════════ Cap 1: Coordenadas ══════════════ -->
+        <div class="cap visible" id="cap1">
+          <p class="cap-desc">
+            Un <strong>punto</strong> necesita dos datos para existir: su posición horizontal
+            (<em>x</em>) y su posición vertical (<em>y</em>). Estos datos se llaman
+            <strong>argumentos</strong>: valores que le pasamos a una función para que sepa qué dibujar.
+          </p>
+
+          <div class="cap-controles">
+            <div class="controles-pos">
+              <label>x: <input type="number" id="inputPuntoX" min="0" max="590" value="100" /></label>
+              <label>y: <input type="number" id="inputPuntoY" min="0" max="390" value="100" /></label>
+            </div>
+            <button class="accion" id="botonCrearPunto">Crear Punto</button>
+          </div>
+
+          <span class="codigo-titulo">Comparación de código</span>
+          <div class="codigo-comparativa">
+            <div class="bloque-codigo">
+              <h4>DOM / CSS</h4>
+              <pre id="domCap1"><span class="cm">/* Posicionar un elemento en el lienzo */</span>
+<span class="prop">position</span>: <span class="val">absolute</span>;
+<span class="prop">left</span>: <span class="val">100px</span>;  <span class="cm">← posición horizontal (x)</span>
+<span class="prop">top</span>:  <span class="val">100px</span>;  <span class="cm">← posición vertical (y)</span></pre>
+            </div>
+            <div class="bloque-codigo">
+              <h4>p5.js / Processing</h4>
+              <pre id="p5Cap1"><span class="fn">point</span>(<span class="val">100</span>, <span class="val">100</span>);
+<span class="cm">//     ↑       ↑</span>
+<span class="cm">// arg 1: x   arg 2: y</span>
+<span class="cm">// horizontal  vertical</span></pre>
+            </div>
+          </div>
+
+          <span class="mapa-titulo">Mapa de argumentos — <code>point(x, y)</code></span>
+          <table class="mapa-args">
+            <tr><th>Argumento</th><th>Qué controla</th><th>En p5.js</th><th>En DOM / CSS</th></tr>
+            <tr>
+              <td><code>x</code></td>
+              <td>Posición horizontal (izquierda → derecha)</td>
+              <td>1.er argumento de <code>point()</code></td>
+              <td><code>left: x px</code></td>
+            </tr>
+            <tr>
+              <td><code>y</code></td>
+              <td>Posición vertical (arriba → abajo)</td>
+              <td>2.do argumento de <code>point()</code></td>
+              <td><code>top: y px</code></td>
+            </tr>
+          </table>
+
+          <div class="ideas-clave">
+            <h4>Ideas clave</h4>
+            <ul>
+              <li>Un <strong>argumento</strong> es un dato que la función necesita para ejecutarse.</li>
+              <li>En p5.js los argumentos van entre paréntesis, separados por comas: <code>point(x, y)</code></li>
+              <li>En CSS cada argumento es una <strong>propiedad</strong> separada: <code>left</code> para x, <code>top</code> para y.</li>
+              <li>El origen (0, 0) está en la <strong>esquina superior izquierda</strong> del lienzo.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- ══════════════ Cap 2: Primitivas ══════════════ -->
+        <div class="cap" id="cap2">
+          <p class="cap-desc">
+            Una <em>primitiva</em> es una forma visual base. <code>rect()</code> y <code>triangle()</code> necesitan
+            argumentos de posición y tamaño. <code>ellipse()</code> se posiciona desde el <strong>centro</strong>.
+            <code>line()</code> conecta dos puntos. Combina estas 4 primitivas para dibujar un paisaje.
+          </p>
+
+          <div class="cap-controles">
+            <div class="controles-pos">
+              <label>x: <input type="number" id="inputFormaX" min="0" max="590" value="260" /></label>
+              <label>y: <input type="number" id="inputFormaY" min="0" max="390" value="160" /></label>
+              <label>w: <input type="number" id="inputFormaW" min="10" max="300" value="80" /></label>
+              <label>h: <input type="number" id="inputFormaH" min="10" max="300" value="80" /></label>
+            </div>
+            <button class="accion" id="botonCrearCuadrado">Cuadrado (rect)</button>
+            <button class="accion" id="botonCrearCirculo">Círculo (ellipse)</button>
+            <button class="accion" id="botonCrearTriangulo" style="background:linear-gradient(135deg,#2a7b5b,#1a5a3e);">Triángulo (triangle)</button>
+            <button class="accion" id="botonCrearLinea" style="background:linear-gradient(135deg,#4a6fa5,#2d4a7a);">Línea (line)</button>
+          </div>
+
+          <span class="codigo-titulo">Comparación de código</span>
+          <div class="codigo-comparativa">
+            <div class="bloque-codigo">
+              <h4>DOM / CSS</h4>
+              <pre id="domCap2"><span class="prop">left</span>:   <span class="val">260px</span>;  <span class="cm">← x (posición)</span>
+<span class="prop">top</span>:    <span class="val">160px</span>;  <span class="cm">← y (posición)</span>
+<span class="prop">width</span>:  <span class="val">80px</span>;   <span class="cm">← w (ancho)</span>
+<span class="prop">height</span>: <span class="val">80px</span>;   <span class="cm">← h (alto)</span></pre>
+            </div>
+            <div class="bloque-codigo">
+              <h4>p5.js / Processing</h4>
+              <pre id="p5Cap2"><span class="fn">rect</span>(<span class="val">260</span>, <span class="val">160</span>, <span class="val">80</span>, <span class="val">80</span>);
+<span class="cm">//    ↑     ↑    ↑    ↑</span>
+<span class="cm">//    x     y    w    h</span>
+<span class="cm">//  posX  posY ancho alto</span></pre>
+            </div>
+          </div>
+
+          <span class="mapa-titulo">Mapa de argumentos por primitiva</span>
+          <table class="mapa-args" id="tablaArgsCap2">
+            <tr><th>Primitiva</th><th>p5.js</th><th>Argumentos</th><th>En DOM / CSS</th></tr>
+            <tr>
+              <td><code>rect</code></td>
+              <td><code>rect(x, y, w, h)</code></td>
+              <td>x, y = esquina; w, h = tamaño</td>
+              <td><code>left</code>, <code>top</code>, <code>width</code>, <code>height</code></td>
+            </tr>
+            <tr>
+              <td><code>ellipse</code></td>
+              <td><code>ellipse(x, y, w, h)</code></td>
+              <td>x, y = centro; w, h = diámetros</td>
+              <td>Igual + <code>border-radius: 50%</code></td>
+            </tr>
+            <tr>
+              <td><code>triangle</code></td>
+              <td><code>triangle(x1,y1, x2,y2, x3,y3)</code></td>
+              <td>3 vértices (6 valores)</td>
+              <td><code>clip-path: polygon(...)</code></td>
+            </tr>
+            <tr>
+              <td><code>line</code></td>
+              <td><code>line(x1, y1, x2, y2)</code></td>
+              <td>Punto inicio + punto final</td>
+              <td>Div delgado posicionado con <code>left</code>, <code>top</code>, <code>width</code></td>
+            </tr>
+          </table>
+
+          <div class="ideas-clave">
+            <h4>Ideas clave</h4>
+            <ul>
+              <li><code>rect()</code> posiciona desde la <strong>esquina superior izquierda</strong> de la caja.</li>
+              <li><code>ellipse()</code> posiciona desde el <strong>centro</strong> (equivale a <code>ellipseMode(CENTER)</code>).</li>
+              <li><code>triangle()</code> recibe <strong>6 argumentos</strong> (3 vértices × 2 coordenadas). En CSS se logra con <code>clip-path: polygon()</code>.</li>
+              <li><code>line()</code> conecta dos puntos. En el DOM es un div delgado (3px de alto).</li>
+              <li>En el DOM un círculo es una caja con <code>border-radius: 50%</code>.</li>
+              <li>El <strong>orden de los argumentos</strong> importa: x, y, w, h — siempre.</li>
+              <li>Combina primitivas para crear paisajes: rectángulos para el suelo, triángulos para montañas, círculos para el sol, líneas para el horizonte.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- ══════════════ Cap 3: Color ══════════════ -->
+        <div class="cap" id="cap3">
+          <p class="cap-desc">
+            El color en p5.js es un <strong>estado</strong>: llamas a <code>fill(r, g, b)</code>
+            <em>antes</em> de dibujar y todo lo que venga después usa ese color.
+            En CSS es un <strong>atributo</strong> del elemento: lo cambias directamente.
+            Elige un color <strong>antes</strong> de crear una forma, o selecciona una forma existente
+            y cámbiale el color individualmente.
+          </p>
+
+          <div class="cap-controles">
+            <input type="color" id="selectorColor" value="#c84c36" aria-label="Seleccionar color" />
+            <span style="color:var(--texto-suave); font-size:0.9rem;">Elige un color → se aplica a la <strong>forma activa</strong> o a la próxima que crees.</span>
+          </div>
+
+          <span class="codigo-titulo">Comparación de código</span>
+          <div class="codigo-comparativa">
+            <div class="bloque-codigo">
+              <h4>DOM / CSS</h4>
+              <pre id="domCap3"><span class="prop">background-color</span>: <span class="val">rgb(r, g, b)</span>;
+<span class="cm">/* Se aplica directamente al elemento */</span>
+<span class="cm">/* Cambia un atributo del objeto existente */</span></pre>
+            </div>
+            <div class="bloque-codigo">
+              <h4>p5.js / Processing</h4>
+              <pre id="p5Cap3"><span class="fn">fill</span>(<span class="val">r</span>, <span class="val">g</span>, <span class="val">b</span>);   <span class="cm">← llamar ANTES</span>
+<span class="fn">rect</span>(<span class="val">x</span>, <span class="val">y</span>, <span class="val">w</span>, <span class="val">h</span>); <span class="cm">← dibuja con ese color</span>
+<span class="cm">// fill() cambia el ESTADO gráfico</span></pre>
+            </div>
+          </div>
+
+          <span class="mapa-titulo">Mapa de argumentos — <code>fill(r, g, b)</code></span>
+          <table class="mapa-args">
+            <tr><th>Argumento</th><th>Qué controla</th><th>Rango</th><th>En DOM / CSS</th></tr>
+            <tr>
+              <td><code>r</code></td>
+              <td>Componente <strong style="color:#c43">rojo</strong></td>
+              <td>0 – 255</td>
+              <td>1.er valor de <code>rgb(r, g, b)</code></td>
+            </tr>
+            <tr>
+              <td><code>g</code></td>
+              <td>Componente <strong style="color:#3a3">verde</strong></td>
+              <td>0 – 255</td>
+              <td>2.do valor de <code>rgb(r, g, b)</code></td>
+            </tr>
+            <tr>
+              <td><code>b</code></td>
+              <td>Componente <strong style="color:#36c">azul</strong></td>
+              <td>0 – 255</td>
+              <td>3.er valor de <code>rgb(r, g, b)</code></td>
+            </tr>
+          </table>
+
+          <div class="ideas-clave">
+            <h4>Ideas clave</h4>
+            <ul>
+              <li><code>fill()</code> no dibuja nada: solo cambia el <strong>estado</strong> del pincel.</li>
+              <li>En DOM cambias un atributo de un objeto <em>ya existente</em>.</li>
+              <li>En p5.js el <strong>orden importa</strong>: <code>fill()</code> debe ir <em>antes</em> del dibujo.</li>
+              <li>Cada forma puede tener su propio color: elige antes de crear, o selecciona una y cámbialo.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- ══════════════ Cap 4: Variables, operadores y dibujo algorítmico ══════════════ -->
+        <div class="cap" id="cap4">
+          <p class="cap-desc">
+            Una <em>variable</em> guarda un valor que puede cambiar. Los sliders convierten
+            un número abstracto en una transformación visual. Los <strong>operadores</strong>
+            (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>) permiten modificar ese valor,
+            y con esas reglas podemos construir <strong>dibujo algorítmico</strong>: formas que se organizan
+            a partir de una instrucción repetible.
+          </p>
+
+          <div class="cap-controles" style="flex-direction:column; align-items:stretch;">
+            <div class="rango-grupo">
+              <label><span>Ancho (w)</span><span id="valorAncho">80 px</span></label>
+              <input type="range" id="sliderAncho" min="20" max="280" value="80" />
+            </div>
+            <div class="rango-grupo">
+              <label><span>Alto (h)</span><span id="valorAlto">80 px</span></label>
+              <input type="range" id="sliderAlto" min="20" max="280" value="80" />
+            </div>
+            <div class="estado-info" id="estadoForma">
+              Crea un cuadrado o círculo primero. Luego vuelve aquí y mueve los sliders.
+            </div>
+          </div>
+
+          <span class="codigo-titulo">Comparación de código</span>
+          <div class="codigo-comparativa">
+            <div class="bloque-codigo">
+              <h4>DOM / JS</h4>
+              <pre id="domCap4"><span class="kw">let</span> <span class="val">w</span> = slider.<span class="prop">value</span>;
+elemento.<span class="prop">style.width</span> = <span class="val">w</span> + <span class="str">"px"</span>;
+<span class="cm">// El slider alimenta la propiedad CSS</span>
+<span class="cm">// La variable w conecta dato → visual</span></pre>
+            </div>
+            <div class="bloque-codigo">
+              <h4>p5.js / Processing</h4>
+              <pre id="p5Cap4"><span class="kw">let</span> <span class="val">w</span> = <span class="val">80</span>;
+<span class="fn">rect</span>(<span class="val">x</span>, <span class="val">y</span>, <span class="val">w</span>, <span class="val">h</span>);
+<span class="cm">// w y h son variables, no números fijos</span>
+<span class="cm">// Cambiar la variable = cambiar la forma</span></pre>
+            </div>
+          </div>
+
+          <span class="mapa-titulo">Variable → Argumento → Visual</span>
+          <table class="mapa-args">
+            <tr><th>Variable</th><th>Qué almacena</th><th>Dónde se usa</th><th>Efecto visual</th></tr>
+            <tr>
+              <td><code>w</code></td>
+              <td>Ancho (valor del slider)</td>
+              <td>3.er arg. de <code>rect(x,y,<strong>w</strong>,h)</code></td>
+              <td>Cambia el ancho de la forma</td>
+            </tr>
+            <tr>
+              <td><code>h</code></td>
+              <td>Alto (valor del slider)</td>
+              <td>4.to arg. de <code>rect(x,y,w,<strong>h</strong>)</code></td>
+              <td>Cambia el alto de la forma</td>
+            </tr>
+          </table>
+
+          <div class="ideas-clave" style="margin-bottom: 14px;">
+            <h4>Variables, operadores y dibujo algorítmico</h4>
+            <ul>
+              <li>Una variable puede participar en operaciones como <code>w * 2</code> o <code>h + 20</code> para generar nuevos valores.</li>
+              <li>Un operador transforma un dato: sumar desplaza, restar acerca, multiplicar escala y dividir reduce.</li>
+              <li>El dibujo algorítmico aparece cuando una regla numérica se repite para producir varias formas o patrones.</li>
+            </ul>
+          </div>
+
+          <div class="ideas-clave">
+            <h4>Ideas clave</h4>
+            <ul>
+              <li>Una <strong>variable</strong> = nombre + valor que puede cambiar.</li>
+              <li>Los sliders hacen tangible la idea de <em>dato dinámico</em>.</li>
+              <li>Cuando una variable alimenta un argumento, el dibujo se vuelve <strong>interactivo</strong>.</li>
+              <li>Cuando además aplicamos operadores, el dibujo puede seguir una <strong>regla visual</strong> y convertirse en un sistema.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- ══════════════ Cap 5: Tipos de Datos ══════════════ -->
+        <div class="cap" id="cap5">
+          <p class="cap-desc">
+            Cada valor que usamos al programar tiene un <strong>tipo de dato</strong>.
+            El tipo determina qué operaciones puedes hacer con él y cómo se comporta.
+            En JavaScript y p5.js existen tipos <em>primitivos</em> (<strong>Number</strong>,
+            <strong>String</strong>, <strong>Boolean</strong>, <strong>undefined</strong>,
+            <strong>null</strong>) y tipos <em>compuestos</em> (<strong>Array</strong>,
+            <strong>Object</strong>) que agrupan varios valores.
+          </p>
+
+          <div class="cap-controles" style="flex-direction:column; align-items:stretch; gap:8px;">
+            <div class="controles-pos" style="margin-bottom:0;">
+              <label style="flex:1;">Valor a probar:
+                <input type="text" id="inputTipoDato" value="42" style="width:140px; padding:6px 10px; border:2px solid var(--borde); border-radius:8px; font:inherit; font-size:0.88rem; background:#fff;" />
+              </label>
+              <button class="accion" id="botonEvalTipo">Evaluar tipo</button>
+            </div>
+            <div class="estado-info" id="resultadoTipo">
+              Escribe un valor y presiona "Evaluar tipo" para descubrir qué tipo de dato es.
+            </div>
+          </div>
+
+          <span class="codigo-titulo">Comparación de código</span>
+          <div class="codigo-comparativa">
+            <div class="bloque-codigo">
+              <h4>JavaScript / DOM</h4>
+              <pre id="domCap5"><span class="kw">let</span> <span class="val">dato</span> = <span class="val">42</span>;
+<span class="fn">typeof</span> <span class="val">dato</span>; <span class="cm">// "number"</span>
+<span class="cm">// typeof devuelve el tipo como texto</span></pre>
+            </div>
+            <div class="bloque-codigo">
+              <h4>p5.js / Processing</h4>
+              <pre id="p5Cap5"><span class="kw">let</span> <span class="val">dato</span> = <span class="val">42</span>;
+<span class="fn">print</span>(<span class="fn">typeof</span> <span class="val">dato</span>); <span class="cm">// "number"</span>
+<span class="cm">// Mismo concepto, misma sintaxis</span></pre>
+            </div>
+          </div>
+
+          <span class="mapa-titulo">Tipos de datos — Tabla completa</span>
+          <table class="mapa-args">
+            <tr><th>Tipo</th><th>Qué almacena</th><th>Ejemplos</th><th>Uso en p5.js</th></tr>
+            <tr>
+              <td><code>Number</code></td>
+              <td>Valores numéricos (enteros y decimales)</td>
+              <td><code>42</code>, <code>3.14</code>, <code>-10</code>, <code>0</code></td>
+              <td>Coordenadas, tamaños, colores: <code>rect(10, 20, 80, 80)</code></td>
+            </tr>
+            <tr>
+              <td><code>String</code></td>
+              <td>Texto (cadena de caracteres)</td>
+              <td><code>"hola"</code>, <code>"rojo"</code>, <code>"px"</code></td>
+              <td>Mostrar texto: <code>text("hola", 50, 50)</code></td>
+            </tr>
+            <tr>
+              <td><code>Boolean</code></td>
+              <td>Verdadero o falso (solo 2 valores)</td>
+              <td><code>true</code>, <code>false</code></td>
+              <td>Condiciones: <code>if (mouseIsPressed)</code></td>
+            </tr>
+            <tr>
+              <td><code>undefined</code></td>
+              <td>"Sin valor asignado" — valor por defecto de toda variable nueva</td>
+              <td><code>let x;</code> → <code>x</code> vale <code>undefined</code></td>
+              <td>Detectar si un argumento fue omitido: <code>if (valor === undefined)</code></td>
+            </tr>
+            <tr>
+              <td><code>null</code></td>
+              <td>"Vacío intencional" — el programador decide que no hay dato</td>
+              <td><code>let img = null;</code></td>
+              <td>Limpiar referencia: <code>img = null;</code> antes de cargar otra imagen</td>
+            </tr>
+            <tr>
+              <td><code>Array</code></td>
+              <td>Lista ordenada de valores (de cualquier tipo)</td>
+              <td><code>[10, 20, 30]</code>, <code>["a", "b"]</code></td>
+              <td>Colecciones de partículas, colores, posiciones: <code>vertices[i]</code></td>
+            </tr>
+            <tr>
+              <td><code>Object</code></td>
+              <td>Pares clave-valor que agrupan datos relacionados</td>
+              <td><code>{ x: 10, y: 20 }</code></td>
+              <td>Agrupar propiedades: <code>particula.x</code>, <code>particula.y</code></td>
+            </tr>
+          </table>
+
+          <span class="codigo-titulo">Ejemplos por tipo — Primitivos</span>
+          <div class="codigo-comparativa">
+            <div class="bloque-codigo">
+              <h4>Number — opera matemáticamente</h4>
+              <pre><span class="kw">let</span> <span class="val">x</span> = <span class="val">100</span>;
+<span class="kw">let</span> <span class="val">y</span> = <span class="val">x</span> + <span class="val">50</span>;  <span class="cm">// 150</span>
+<span class="kw">let</span> <span class="val">mitad</span> = <span class="val">x</span> / <span class="val">2</span>; <span class="cm">// 50</span>
+<span class="fn">ellipse</span>(<span class="val">x</span>, <span class="val">y</span>, <span class="val">mitad</span>, <span class="val">mitad</span>);</pre>
+            </div>
+            <div class="bloque-codigo">
+              <h4>String — concatena texto</h4>
+              <pre><span class="kw">let</span> <span class="val">nombre</span> = <span class="str">"Hola"</span>;
+<span class="kw">let</span> <span class="val">saludo</span> = <span class="val">nombre</span> + <span class="str">" mundo"</span>;
+<span class="cm">// "Hola mundo"</span>
+<span class="fn">text</span>(<span class="val">saludo</span>, <span class="val">50</span>, <span class="val">50</span>);</pre>
+            </div>
+          </div>
+          <div class="codigo-comparativa">
+            <div class="bloque-codigo">
+              <h4>Boolean — controla flujo</h4>
+              <pre><span class="kw">let</span> <span class="val">visible</span> = <span class="val">true</span>;
+<span class="kw">if</span> (<span class="val">visible</span>) {
+  <span class="fn">rect</span>(<span class="val">100</span>, <span class="val">100</span>, <span class="val">50</span>, <span class="val">50</span>);
+}</pre>
+            </div>
+            <div class="bloque-codigo">
+              <h4>undefined — variable sin valor</h4>
+              <pre><span class="kw">let</span> <span class="val">z</span>;              <span class="cm">// no asignamos nada</span>
+<span class="fn">print</span>(<span class="val">z</span>);           <span class="cm">// undefined</span>
+<span class="fn">print</span>(<span class="val">z</span> + <span class="val">10</span>);     <span class="cm">// NaN (no es número)</span>
+<span class="cm">// Siempre asigna un valor inicial</span></pre>
+            </div>
+          </div>
+          <div class="codigo-comparativa">
+            <div class="bloque-codigo">
+              <h4>null — vacío intencional</h4>
+              <pre><span class="kw">let</span> <span class="val">img</span> = <span class="val">null</span>;     <span class="cm">// aún no hay imagen</span>
+<span class="val">img</span> = <span class="fn">loadImage</span>(<span class="str">"foto.png"</span>);
+<span class="cm">// null indica "todavía no existe"</span>
+<span class="cm">// Distinto de undefined ("olvidé asignar")</span></pre>
+            </div>
+            <div class="bloque-codigo">
+              <h4>&#x26a0; Error común: tipo incorrecto</h4>
+              <pre><span class="kw">let</span> <span class="val">x</span> = <span class="str">"100"</span>; <span class="cm">// ¡Es String, no Number!</span>
+<span class="kw">let</span> <span class="val">y</span> = <span class="val">x</span> + <span class="val">50</span>;  <span class="cm">// "10050" (concatenó)</span>
+<span class="cm">// Solución: Number("100") → 100</span></pre>
+            </div>
+          </div>
+
+          <span class="codigo-titulo">Ejemplos por tipo — Compuestos</span>
+          <div class="codigo-comparativa">
+            <div class="bloque-codigo">
+              <h4>Array — lista ordenada de valores</h4>
+              <pre><span class="kw">let</span> <span class="val">colores</span> = [<span class="str">"rojo"</span>, <span class="str">"verde"</span>, <span class="str">"azul"</span>];
+<span class="fn">print</span>(<span class="val">colores</span>[<span class="val">0</span>]);  <span class="cm">// "rojo"</span>
+<span class="fn">print</span>(<span class="val">colores</span>.<span class="prop">length</span>); <span class="cm">// 3</span>
+<span class="cm">// Los índices empiezan en 0</span></pre>
+            </div>
+            <div class="bloque-codigo">
+              <h4>Array en p5.js — múltiples posiciones</h4>
+              <pre><span class="kw">let</span> <span class="val">xs</span> = [<span class="val">50</span>, <span class="val">150</span>, <span class="val">250</span>];
+<span class="kw">for</span> (<span class="kw">let</span> <span class="val">i</span> = <span class="val">0</span>; <span class="val">i</span> &lt; <span class="val">xs</span>.<span class="prop">length</span>; <span class="val">i</span>++) {
+  <span class="fn">ellipse</span>(<span class="val">xs</span>[<span class="val">i</span>], <span class="val">200</span>, <span class="val">30</span>, <span class="val">30</span>);
+} <span class="cm">// Dibuja 3 círculos</span></pre>
+            </div>
+          </div>
+          <div class="codigo-comparativa">
+            <div class="bloque-codigo">
+              <h4>Object — agrupar datos relacionados</h4>
+              <pre><span class="kw">let</span> <span class="val">particula</span> = {
+  <span class="prop">x</span>: <span class="val">100</span>,  <span class="prop">y</span>: <span class="val">200</span>,
+  <span class="prop">tam</span>: <span class="val">30</span>, <span class="prop">color</span>: <span class="str">"#ff0"</span>
+};</pre>
+            </div>
+            <div class="bloque-codigo">
+              <h4>Object en p5.js — usar propiedades</h4>
+              <pre><span class="fn">fill</span>(<span class="val">particula</span>.<span class="prop">color</span>);
+<span class="fn">ellipse</span>(
+  <span class="val">particula</span>.<span class="prop">x</span>, <span class="val">particula</span>.<span class="prop">y</span>,
+  <span class="val">particula</span>.<span class="prop">tam</span>, <span class="val">particula</span>.<span class="prop">tam</span>
+);</pre>
+            </div>
+          </div>
+
+          <span class="codigo-titulo">Processing (Java) vs p5.js (JavaScript) — Tipado</span>
+          <div class="codigo-comparativa">
+            <div class="bloque-codigo">
+              <h4>Processing (Java) — tipado estático</h4>
+              <pre><span class="kw">int</span> <span class="val">x</span> = <span class="val">100</span>;       <span class="cm">// entero</span>
+<span class="kw">float</span> <span class="val">y</span> = <span class="val">3.14</span>;    <span class="cm">// decimal</span>
+<span class="kw">boolean</span> <span class="val">v</span> = <span class="val">true</span>; <span class="cm">// verdadero/falso</span>
+<span class="kw">String</span> <span class="val">s</span> = <span class="str">"hola"</span>; <span class="cm">// texto</span>
+<span class="kw">color</span> <span class="val">c</span> = <span class="fn">color</span>(<span class="val">255</span>, <span class="val">0</span>, <span class="val">0</span>);</pre>
+            </div>
+            <div class="bloque-codigo">
+              <h4>p5.js (JavaScript) — tipado dinámico</h4>
+              <pre><span class="kw">let</span> <span class="val">x</span> = <span class="val">100</span>;       <span class="cm">// Number (entero)</span>
+<span class="kw">let</span> <span class="val">y</span> = <span class="val">3.14</span>;      <span class="cm">// Number (decimal)</span>
+<span class="kw">let</span> <span class="val">v</span> = <span class="val">true</span>;      <span class="cm">// Boolean</span>
+<span class="kw">let</span> <span class="val">s</span> = <span class="str">"hola"</span>;    <span class="cm">// String</span>
+<span class="kw">let</span> <span class="val">c</span> = <span class="fn">color</span>(<span class="val">255</span>, <span class="val">0</span>, <span class="val">0</span>);</pre>
+            </div>
+          </div>
+
+          <span class="mapa-titulo">Equivalencia de tipos: Processing (Java) → p5.js (JavaScript)</span>
+          <table class="mapa-args">
+            <tr><th>Processing (Java)</th><th>p5.js (JavaScript)</th><th>Diferencia clave</th></tr>
+            <tr>
+              <td><code>int</code></td>
+              <td><code>Number</code></td>
+              <td>Java distingue enteros de decimales; JS usa <code>Number</code> para ambos</td>
+            </tr>
+            <tr>
+              <td><code>float</code></td>
+              <td><code>Number</code></td>
+              <td><code>float</code> almacena decimales; en JS todo número ya es decimal internamente</td>
+            </tr>
+            <tr>
+              <td><code>boolean</code></td>
+              <td><code>Boolean</code></td>
+              <td>Mismo concepto; en Java se escribe en minúscula (<code>boolean</code>)</td>
+            </tr>
+            <tr>
+              <td><code>String</code></td>
+              <td><code>String</code></td>
+              <td>Mismo concepto en ambos; Java usa solo <code>"comillas dobles"</code></td>
+            </tr>
+            <tr>
+              <td><code>color</code></td>
+              <td><code>p5.Color</code> (objeto)</td>
+              <td>En Java es un alias de <code>int</code> (ARGB); en JS es un objeto p5</td>
+            </tr>
+            <tr>
+              <td><code>void</code> (funciones)</td>
+              <td>No existe</td>
+              <td>Java exige declarar qué retorna; JS infiere automáticamente</td>
+            </tr>
+          </table>
+
+          <div class="codigo-comparativa">
+            <div class="bloque-codigo">
+              <h4>&#x26a0; int vs float en Processing</h4>
+              <pre><span class="kw">int</span> <span class="val">a</span> = <span class="val">7</span> / <span class="val">2</span>;    <span class="cm">// 3 (¡trunca!)</span>
+<span class="kw">float</span> <span class="val">b</span> = <span class="val">7.0</span> / <span class="val">2</span>; <span class="cm">// 3.5 (correcto)</span>
+<span class="cm">// En Processing, int/int = int</span>
+<span class="cm">// Usa float si necesitas decimales</span></pre>
+            </div>
+            <div class="bloque-codigo">
+              <h4>En p5.js no hay este problema</h4>
+              <pre><span class="kw">let</span> <span class="val">a</span> = <span class="val">7</span> / <span class="val">2</span>;    <span class="cm">// 3.5 (siempre decimal)</span>
+<span class="kw">let</span> <span class="val">b</span> = <span class="fn">Math.floor</span>(<span class="val">7</span> / <span class="val">2</span>); <span class="cm">// 3</span>
+<span class="cm">// JS siempre da decimal</span>
+<span class="cm">// Usa floor() si quieres entero</span></pre>
+            </div>
+          </div>
+
+          <div class="ideas-clave">
+            <h4>Ideas clave</h4>
+            <ul>
+              <li><strong>Number</strong> = datos para posiciones, tamaños y colores. Se puede operar matemáticamente.</li>
+              <li><strong>String</strong> = texto entre comillas. El <code>+</code> con strings <em>concatena</em> en vez de sumar.</li>
+              <li><strong>Boolean</strong> = <code>true</code> o <code>false</code>. Esencial para decisiones con <code>if</code>.</li>
+              <li><strong>undefined</strong> = variable declarada pero sin valor. <code>let x;</code> → <code>x</code> es <code>undefined</code>.</li>
+              <li><strong>null</strong> = vacío a propósito. El programador dice "aquí no hay nada aún".</li>
+              <li><strong>Array</strong> = lista con índice numérico (<code>[0]</code>, <code>[1]</code>…). Ideal para colecciones de formas o posiciones.</li>
+              <li><strong>Object</strong> = pares clave:valor. Agrupa datos relacionados: <code>particula.x</code>, <code>particula.y</code>.</li>
+              <li><code>typeof</code> te dice qué tipo tiene un valor: útil para depurar errores.</li>
+              <li>Mezclar tipos sin querer es un <strong>error común</strong>: <code>"100" + 50</code> da <code>"10050"</code>, no <code>150</code>.</li>
+              <li>Processing (Java) usa <strong>tipado estático</strong>: debes escribir <code>int</code>, <code>float</code>, <code>String</code> al declarar. p5.js (JavaScript) usa <strong>tipado dinámico</strong>: solo escribes <code>let</code> y el tipo se deduce del valor.</li>
+              <li>En Processing, <code>int / int</code> = <code>int</code> (trunca decimales). Usa <code>float</code> para mantener precisión. En p5.js esto no ocurre.</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="barra-estado">
+    <strong>Estado:</strong>
+    <span id="notaEstado">Selecciona un capítulo y empieza a interactuar con los controles.</span>
+  </footer>
+</main>
+
+<script>
+  // ── Referencias al DOM ──
+  const lienzoDom       = document.getElementById('lienzoDom');
+  const etiquetasCoord  = document.getElementById('etiquetasCoord');
+  const leyendaLienzo   = document.getElementById('leyendaLienzo');
+  const notaEstado      = document.getElementById('notaEstado');
+
+  const inputPuntoX = document.getElementById('inputPuntoX');
+  const inputPuntoY = document.getElementById('inputPuntoY');
+  const botonCrearPunto = document.getElementById('botonCrearPunto');
+
+  const inputFormaX = document.getElementById('inputFormaX');
+  const inputFormaY = document.getElementById('inputFormaY');
+  const inputFormaW = document.getElementById('inputFormaW');
+  const inputFormaH = document.getElementById('inputFormaH');
+  const botonCrearCuadrado = document.getElementById('botonCrearCuadrado');
+  const botonCrearCirculo  = document.getElementById('botonCrearCirculo');
+
+  const selectorColor = document.getElementById('selectorColor');
+  const sliderAncho   = document.getElementById('sliderAncho');
+  const sliderAlto    = document.getElementById('sliderAlto');
+  const valorAncho    = document.getElementById('valorAncho');
+  const valorAlto     = document.getElementById('valorAlto');
+  const estadoForma   = document.getElementById('estadoForma');
+
+  // Paneles de código dinámico
+  const domCap1 = document.getElementById('domCap1');
+  const p5Cap1  = document.getElementById('p5Cap1');
+  const domCap2 = document.getElementById('domCap2');
+  const p5Cap2  = document.getElementById('p5Cap2');
+  const domCap3 = document.getElementById('domCap3');
+  const p5Cap3  = document.getElementById('p5Cap3');
+  const domCap4 = document.getElementById('domCap4');
+  const p5Cap4  = document.getElementById('p5Cap4');
+
+  // ── Estado global ──
+  let formaActiva = null;
+  let colorActual = selectorColor.value;
+
+  // ── Sistema de pestañas ──
+  const pestanas  = document.querySelectorAll('.pestana');
+  const capitulos = document.querySelectorAll('.cap');
+
+  function activarPestana(numero) {
+    pestanas.forEach(function(p)  { p.classList.toggle('activa',  p.dataset.cap === numero); });
+    capitulos.forEach(function(c) { c.classList.toggle('visible', c.id === 'cap' + numero); });
+  }
+  pestanas.forEach(function(p) {
+    p.addEventListener('click', function() { activarPestana(p.dataset.cap); });
+  });
+
+  // ── Etiquetas de coordenadas ──
+  // Solo hasta (500,300) para que las etiquetas no se salgan del lienzo.
+  function construirEtiquetas() {
+    for (var y = 0; y <= 400; y += 100) {
+      for (var x = 0; x <= 600; x += 100) {
+        // Omitir etiquetas en el borde derecho y el inferior
+        // para que no desborden visualmente
+        if (x === 600 && y > 0) continue;
+        if (y === 400 && x > 0) continue;
+        var etiqueta = document.createElement('div');
+        etiqueta.className = 'etiqueta-coord';
+        etiqueta.style.left = x + 'px';
+        etiqueta.style.top  = y + 'px';
+        etiqueta.textContent = '(' + x + ',' + y + ')';
+        etiquetasCoord.appendChild(etiqueta);
+      }
+    }
+  }
+
+  // ── Hex → RGB ──
+  function hexARgb(hex) {
+    var h = hex.replace('#', '');
+    return {
+      r: parseInt(h.slice(0, 2), 16),
+      g: parseInt(h.slice(2, 4), 16),
+      b: parseInt(h.slice(4, 6), 16)
+    };
+  }
+
+  // ── Clamp helper ──
+  function clamp(val, min, max) {
+    return Math.min(Math.max(Number(val) || 0, min), max);
+  }
+
+  // ── Forma activa ──
+  function definirFormaActiva(nuevaForma, descripcion) {
+    var todas = lienzoDom.querySelectorAll('.forma');
+    for (var i = 0; i < todas.length; i++) { todas[i].classList.remove('activa'); }
+    formaActiva = nuevaForma;
+    if (formaActiva) {
+      formaActiva.classList.add('activa');
+      estadoForma.textContent = descripcion;
+      // Sincronizar el selector de color con el color de la forma activa
+      var bgColor = formaActiva.style.backgroundColor;
+      if (bgColor) {
+        selectorColor.value = rgbAHex(bgColor);
+        colorActual = selectorColor.value;
+      }
+    }
+  }
+
+  // Convierte "rgb(r, g, b)" o hex a formato #rrggbb
+  function rgbAHex(color) {
+    if (color.charAt(0) === '#') return color;
+    var partes = color.match(/\d+/g);
+    if (!partes || partes.length < 3) return colorActual;
+    var r = parseInt(partes[0]).toString(16).padStart(2, '0');
+    var g = parseInt(partes[1]).toString(16).padStart(2, '0');
+    var b = parseInt(partes[2]).toString(16).padStart(2, '0');
+    return '#' + r + g + b;
+  }
+
+  // ── Fábrica de formas ──
+  function crearFormaBase(tipo, x, y, ancho, alto, usarCentro) {
+    var forma = document.createElement('div');
+    forma.classList.add('forma', tipo);
+    forma.style.backgroundColor = colorActual;
+    forma.style.width  = ancho + 'px';
+    forma.style.height = alto  + 'px';
+    forma.style.left   = x + 'px';
+    forma.style.top    = y + 'px';
+    if (!usarCentro) forma.style.transform = 'none';
+
+    forma.addEventListener('click', function() {
+      definirFormaActiva(forma, 'Forma seleccionada. Los sliders del cap. 4 la controlan.');
+      activarPestana('4');
+    });
+
+    lienzoDom.appendChild(forma);
+    return forma;
+  }
+
+  // ═══════════════════════════════════════
+  // Actualización dinámica de código – Cap 1
+  // ═══════════════════════════════════════
+  function actualizarCodigoCap1() {
+    var x = clamp(inputPuntoX.value, 0, 590);
+    var y = clamp(inputPuntoY.value, 0, 390);
+
+    domCap1.innerHTML =
+      '<span class="cm">/* Posicionar un elemento en el lienzo */</span>\n' +
+      '<span class="prop">position</span>: <span class="val">absolute</span>;\n' +
+      '<span class="prop">left</span>: <span class="val">' + x + 'px</span>;  <span class="cm">\u2190 posici\u00f3n horizontal (x)</span>\n' +
+      '<span class="prop">top</span>:  <span class="val">' + y + 'px</span>;  <span class="cm">\u2190 posici\u00f3n vertical (y)</span>';
+
+    p5Cap1.innerHTML =
+      '<span class="fn">point</span>(<span class="val">' + x + '</span>, <span class="val">' + y + '</span>);\n' +
+      '<span class="cm">//     \u2191' + ' '.repeat(String(x).length > 2 ? String(x).length - 1 : 2) + '     \u2191</span>\n' +
+      '<span class="cm">// arg 1: x   arg 2: y</span>\n' +
+      '<span class="cm">// horizontal  vertical</span>';
+  }
+
+  inputPuntoX.addEventListener('input', actualizarCodigoCap1);
+  inputPuntoY.addEventListener('input', actualizarCodigoCap1);
+
+  // ═══════════════════════════════════════
+  // Actualización dinámica de código – Cap 2
+  // ═══════════════════════════════════════
+  var ultimaFormaCap2 = 'rect';
+
+  function actualizarCodigoCap2() {
+    var x = clamp(inputFormaX.value, 0, 590);
+    var y = clamp(inputFormaY.value, 0, 390);
+    var w = clamp(inputFormaW.value, 10, 300);
+    var h = clamp(inputFormaH.value, 10, 300);
+
+    if (ultimaFormaCap2 === 'rect') {
+      domCap2.innerHTML =
+        '<span class="prop">left</span>:   <span class="val">' + x + 'px</span>;  <span class="cm">\u2190 x (posici\u00f3n)</span>\n' +
+        '<span class="prop">top</span>:    <span class="val">' + y + 'px</span>;  <span class="cm">\u2190 y (posici\u00f3n)</span>\n' +
+        '<span class="prop">width</span>:  <span class="val">' + w + 'px</span>;   <span class="cm">\u2190 w (ancho)</span>\n' +
+        '<span class="prop">height</span>: <span class="val">' + h + 'px</span>;   <span class="cm">\u2190 h (alto)</span>';
+
+      p5Cap2.innerHTML =
+        '<span class="fn">rect</span>(<span class="val">' + x + '</span>, <span class="val">' + y + '</span>, <span class="val">' + w + '</span>, <span class="val">' + h + '</span>);\n' +
+        '<span class="cm">//    \u2191     \u2191    \u2191    \u2191</span>\n' +
+        '<span class="cm">//    x     y    w    h</span>\n' +
+        '<span class="cm">//  posX  posY ancho alto</span>';
+    } else if (ultimaFormaCap2 === 'ellipse') {
+      domCap2.innerHTML =
+        '<span class="prop">left</span>:   <span class="val">' + x + 'px</span>;  <span class="cm">\u2190 centro x</span>\n' +
+        '<span class="prop">top</span>:    <span class="val">' + y + 'px</span>;  <span class="cm">\u2190 centro y</span>\n' +
+        '<span class="prop">width</span>:  <span class="val">' + w + 'px</span>;   <span class="cm">\u2190 di\u00e1metro horiz.</span>\n' +
+        '<span class="prop">height</span>: <span class="val">' + h + 'px</span>;   <span class="cm">\u2190 di\u00e1metro vert.</span>\n' +
+        '<span class="prop">border-radius</span>: <span class="val">50%</span>;';
+
+      p5Cap2.innerHTML =
+        '<span class="fn">ellipseMode</span>(<span class="val">CENTER</span>);\n' +
+        '<span class="fn">ellipse</span>(<span class="val">' + x + '</span>, <span class="val">' + y + '</span>, <span class="val">' + w + '</span>, <span class="val">' + h + '</span>);\n' +
+        '<span class="cm">//       \u2191     \u2191    \u2191    \u2191</span>\n' +
+        '<span class="cm">//     centX centY  dW   dH</span>';
+    } else if (ultimaFormaCap2 === 'triangle') {
+      var x2 = x - Math.round(w / 2);
+      var y2 = y + h;
+      var x3 = x + Math.round(w / 2);
+      var y3 = y + h;
+      domCap2.innerHTML =
+        '<span class="prop">left</span>:   <span class="val">' + (x - Math.round(w / 2)) + 'px</span>;\n' +
+        '<span class="prop">top</span>:    <span class="val">' + y + 'px</span>;\n' +
+        '<span class="prop">width</span>:  <span class="val">' + w + 'px</span>;  <span class="prop">height</span>: <span class="val">' + h + 'px</span>;\n' +
+        '<span class="prop">clip-path</span>: <span class="fn">polygon</span>(<span class="val">50% 0%, 0% 100%, 100% 100%</span>);';
+
+      p5Cap2.innerHTML =
+        '<span class="fn">triangle</span>(\n' +
+        '  <span class="val">' + x + '</span>, <span class="val">' + y + '</span>,     <span class="cm">// v\u00e9rtice superior</span>\n' +
+        '  <span class="val">' + x2 + '</span>, <span class="val">' + y2 + '</span>,   <span class="cm">// v\u00e9rtice izq.</span>\n' +
+        '  <span class="val">' + x3 + '</span>, <span class="val">' + y3 + '</span>    <span class="cm">// v\u00e9rtice der.</span>\n);';
+    } else if (ultimaFormaCap2 === 'line') {
+      var x2l = x + w;
+      domCap2.innerHTML =
+        '<span class="prop">left</span>:   <span class="val">' + x + 'px</span>;  <span class="cm">\u2190 inicio x</span>\n' +
+        '<span class="prop">top</span>:    <span class="val">' + y + 'px</span>;  <span class="cm">\u2190 inicio y</span>\n' +
+        '<span class="prop">width</span>:  <span class="val">' + w + 'px</span>;  <span class="cm">\u2190 largo</span>\n' +
+        '<span class="prop">height</span>: <span class="val">3px</span>;      <span class="cm">\u2190 grosor fijo</span>';
+
+      p5Cap2.innerHTML =
+        '<span class="fn">line</span>(<span class="val">' + x + '</span>, <span class="val">' + y + '</span>, <span class="val">' + x2l + '</span>, <span class="val">' + y + '</span>);\n' +
+        '<span class="cm">//    \u2191    \u2191     \u2191     \u2191</span>\n' +
+        '<span class="cm">//   x1   y1    x2    y2</span>\n' +
+        '<span class="cm">// inicio \u2192\u2192\u2192\u2192\u2192\u2192  final</span>';
+    }
+  }
+
+  inputFormaX.addEventListener('input', actualizarCodigoCap2);
+  inputFormaY.addEventListener('input', actualizarCodigoCap2);
+  inputFormaW.addEventListener('input', actualizarCodigoCap2);
+  inputFormaH.addEventListener('input', actualizarCodigoCap2);
+
+  // ═══════════════════════════════════════
+  // Cap 1: Crear punto
+  // ═══════════════════════════════════════
+  function crearPunto() {
+    var x = clamp(inputPuntoX.value, 0, 590);
+    var y = clamp(inputPuntoY.value, 0, 390);
+    crearFormaBase('punto', x, y, 10, 10, true);
+    notaEstado.textContent    = 'Punto en (' + x + ', ' + y + '). CSS: left:' + x + 'px; top:' + y + 'px. p5.js: point(' + x + ', ' + y + ').';
+    leyendaLienzo.textContent = 'Punto en (' + x + ', ' + y + '). La dupla (x, y) se traduce en left y top del CSS.';
+    definirFormaActiva(null, '');
+  }
+  botonCrearPunto.addEventListener('click', crearPunto);
+
+  // ═══════════════════════════════════════
+  // Cap 2: Crear cuadrado
+  // ═══════════════════════════════════════
+  function crearCuadrado() {
+    var x = clamp(inputFormaX.value, 0, 590);
+    var y = clamp(inputFormaY.value, 0, 390);
+    var w = clamp(inputFormaW.value, 10, 300);
+    var h = clamp(inputFormaH.value, 10, 300);
+    ultimaFormaCap2 = 'rect';
+    var forma = crearFormaBase('cuadrado', x, y, w, h, false);
+
+    notaEstado.textContent    = 'rect(' + x + ', ' + y + ', ' + w + ', ' + h + ') — cuadrado posicionado desde esquina superior izquierda.';
+    leyendaLienzo.textContent = 'Cuadrado en (' + x + ', ' + y + ') con tamaño ' + w + '\u00d7' + h + '. En p5.js: rect().';
+    actualizarCodigoCap2();
+    definirFormaActiva(forma, 'Cuadrado activo. Usa los sliders del cap. 4 para cambiar tamaño.');
+  }
+  botonCrearCuadrado.addEventListener('click', crearCuadrado);
+
+  // ═══════════════════════════════════════
+  // Cap 2: Crear círculo
+  // ═══════════════════════════════════════
+  function crearCirculo() {
+    var x = clamp(inputFormaX.value, 0, 590);
+    var y = clamp(inputFormaY.value, 0, 390);
+    var w = clamp(inputFormaW.value, 10, 300);
+    var h = clamp(inputFormaH.value, 10, 300);
+    ultimaFormaCap2 = 'ellipse';
+    var forma = crearFormaBase('circulo', x, y, w, h, true);
+    forma.style.borderRadius = '50%';
+
+    notaEstado.textContent    = 'ellipse(' + x + ', ' + y + ', ' + w + ', ' + h + ') — círculo posicionado desde el centro.';
+    leyendaLienzo.textContent = 'Círculo centrado en (' + x + ', ' + y + ') con diámetro ' + w + '\u00d7' + h + '. En p5.js: ellipse().';
+    actualizarCodigoCap2();
+    definirFormaActiva(forma, 'Círculo activo. Usa los sliders del cap. 4 para cambiar tamaño.');
+  }
+  botonCrearCirculo.addEventListener('click', crearCirculo);
+
+  // ═══════════════════════════════════════
+  // Cap 2: Crear triángulo
+  // ═══════════════════════════════════════
+  var botonCrearTriangulo = document.getElementById('botonCrearTriangulo');
+
+  function crearTriangulo() {
+    var x = clamp(inputFormaX.value, 0, 590);
+    var y = clamp(inputFormaY.value, 0, 390);
+    var w = clamp(inputFormaW.value, 10, 300);
+    var h = clamp(inputFormaH.value, 10, 300);
+    ultimaFormaCap2 = 'triangle';
+    // Posicionar desde la punta superior: left = x - w/2, top = y
+    var forma = crearFormaBase('triangulo', x - Math.round(w / 2), y, w, h, false);
+
+    notaEstado.textContent    = 'triangle(' + x + ', ' + y + ', ...) — triángulo con punta en (' + x + ', ' + y + ').';
+    leyendaLienzo.textContent = 'Triángulo con punta en (' + x + ', ' + y + ') y base ' + w + '×' + h + '. En p5.js: triangle().';
+    actualizarCodigoCap2();
+    definirFormaActiva(forma, 'Triángulo activo. Usa los sliders del cap. 4 para cambiar tamaño.');
+  }
+  botonCrearTriangulo.addEventListener('click', crearTriangulo);
+
+  // ═══════════════════════════════════════
+  // Cap 2: Crear línea
+  // ═══════════════════════════════════════
+  var botonCrearLinea = document.getElementById('botonCrearLinea');
+
+  function crearLinea() {
+    var x = clamp(inputFormaX.value, 0, 590);
+    var y = clamp(inputFormaY.value, 0, 390);
+    var w = clamp(inputFormaW.value, 10, 300);
+    ultimaFormaCap2 = 'line';
+    var forma = crearFormaBase('linea', x, y, w, 3, false);
+
+    notaEstado.textContent    = 'line(' + x + ', ' + y + ', ' + (x + w) + ', ' + y + ') — línea horizontal.';
+    leyendaLienzo.textContent = 'Línea de (' + x + ', ' + y + ') a (' + (x + w) + ', ' + y + '). En p5.js: line().';
+    actualizarCodigoCap2();
+    definirFormaActiva(forma, 'Línea activa. Usa el slider de ancho del cap. 4 para cambiar largo.');
+  }
+  botonCrearLinea.addEventListener('click', crearLinea);
+
+  // ═══════════════════════════════════════
+  // Cap 3: Color
+  // ═══════════════════════════════════════
+  function actualizarColor() {
+    colorActual = selectorColor.value;
+    var rgb = hexARgb(colorActual);
+
+    // Solo cambia la forma activa (como fill() en p5.js: afecta lo que viene después)
+    if (formaActiva) {
+      formaActiva.style.backgroundColor = colorActual;
+
+      domCap3.innerHTML =
+        '<span class="prop">background-color</span>: <span class="val">rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ')</span>;\n' +
+        '<span class="cm">/* Se aplica directamente al elemento activo */</span>\n' +
+        '<span class="cm">/* Cada forma guarda su propio color */</span>';
+
+      p5Cap3.innerHTML =
+        '<span class="fn">fill</span>(<span class="val">' + rgb.r + '</span>, <span class="val">' + rgb.g + '</span>, <span class="val">' + rgb.b + '</span>);   <span class="cm">\u2190 cambiar estado</span>\n' +
+        '<span class="fn">rect</span>(<span class="val">x</span>, <span class="val">y</span>, <span class="val">w</span>, <span class="val">h</span>); <span class="cm">\u2190 dibuja con ese color</span>\n' +
+        '<span class="cm">// fill() afecta solo lo que viene despu\u00e9s</span>';
+
+      notaEstado.textContent = 'Color de forma activa: rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ').';
+    } else {
+      domCap3.innerHTML =
+        '<span class="prop">background-color</span>: <span class="val">rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ')</span>;\n' +
+        '<span class="cm">/* Color preparado para la pr\u00f3xima forma */</span>\n' +
+        '<span class="cm">/* Cada forma mantiene su color individual */</span>';
+
+      p5Cap3.innerHTML =
+        '<span class="fn">fill</span>(<span class="val">' + rgb.r + '</span>, <span class="val">' + rgb.g + '</span>, <span class="val">' + rgb.b + '</span>);   <span class="cm">\u2190 llamar ANTES</span>\n' +
+        '<span class="fn">rect</span>(<span class="val">x</span>, <span class="val">y</span>, <span class="val">w</span>, <span class="val">h</span>); <span class="cm">\u2190 dibuja con ese color</span>\n' +
+        '<span class="cm">// fill() cambia el ESTADO gr\u00e1fico</span>';
+
+      notaEstado.textContent = 'Color preparado: rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + '). La pr\u00f3xima forma usar\u00e1 este color.';
+    }
+  }
+  selectorColor.addEventListener('input', actualizarColor);
+
+  // ═══════════════════════════════════════
+  // Cap 4: Variables / Sliders
+  // ═══════════════════════════════════════
+  function actualizarTamano() {
+    var w = Number(sliderAncho.value);
+    var h = Number(sliderAlto.value);
+    valorAncho.textContent = w + ' px';
+    valorAlto.textContent  = h + ' px';
+
+    if (formaActiva) {
+      formaActiva.style.width  = w + 'px';
+      formaActiva.style.height = h + 'px';
+      if (formaActiva.classList.contains('circulo')) {
+        formaActiva.style.borderRadius = '50%';
+      }
+      if (formaActiva.classList.contains('linea')) {
+        formaActiva.style.height = '3px';
+      }
+      estadoForma.textContent = 'w = ' + w + ', h = ' + h + '. La forma responde en tiempo real.';
+      notaEstado.textContent  = 'Variables: w=' + w + ', h=' + h + '. El dato controla la forma.';
+
+      domCap4.innerHTML =
+        '<span class="kw">let</span> <span class="val">w</span> = <span class="val">' + w + '</span>;\n' +
+        '<span class="kw">let</span> <span class="val">h</span> = <span class="val">' + h + '</span>;\n' +
+        'elemento.<span class="prop">style.width</span>  = <span class="val">w</span> + <span class="str">"px"</span>;\n' +
+        'elemento.<span class="prop">style.height</span> = <span class="val">h</span> + <span class="str">"px"</span>;';
+
+      p5Cap4.innerHTML =
+        '<span class="kw">let</span> <span class="val">w</span> = <span class="val">' + w + '</span>;\n' +
+        '<span class="kw">let</span> <span class="val">h</span> = <span class="val">' + h + '</span>;\n' +
+        '<span class="fn">rect</span>(<span class="val">x</span>, <span class="val">y</span>, <span class="val">w</span>, <span class="val">h</span>);\n' +
+        '<span class="cm">// w y h ahora vienen del slider</span>';
+    } else {
+      estadoForma.textContent = 'Sin forma activa. Crea un cuadrado o círculo y vuelve aquí.';
+    }
+  }
+  sliderAncho.addEventListener('input', actualizarTamano);
+  sliderAlto.addEventListener('input', actualizarTamano);
+
+  // ═══════════════════════════════════════
+  // Cap 5: Tipos de Datos
+  // ═══════════════════════════════════════
+  var inputTipoDato  = document.getElementById('inputTipoDato');
+  var botonEvalTipo  = document.getElementById('botonEvalTipo');
+  var resultadoTipo  = document.getElementById('resultadoTipo');
+  var domCap5        = document.getElementById('domCap5');
+  var p5Cap5         = document.getElementById('p5Cap5');
+
+  function evaluarTipo() {
+    var raw = inputTipoDato.value.trim();
+    var valor, tipo, representacion;
+
+    // Detectar el tipo según lo que escribió el usuario
+    if (raw === 'undefined') {
+      tipo = 'undefined';
+      representacion = 'undefined';
+    } else if (raw === 'null') {
+      tipo = 'null';
+      representacion = 'null';
+    } else if (raw === 'true' || raw === 'false') {
+      tipo  = 'boolean';
+      representacion = raw;
+    } else if (raw === '' || raw === '""' || raw === "''") {
+      tipo  = 'string';
+      representacion = '""';
+    } else if (/^\[.*\]$/.test(raw)) {
+      tipo = 'array';
+      representacion = raw;
+    } else if (/^\{.*\}$/.test(raw)) {
+      tipo = 'object';
+      representacion = raw;
+    } else if (!isNaN(Number(raw)) && raw !== '') {
+      tipo  = 'number';
+      representacion = String(Number(raw));
+    } else {
+      // Quitar comillas si las escribió
+      valor = raw.replace(/^["']|["']$/g, '');
+      tipo  = 'string';
+      representacion = '"' + valor + '"';
+    }
+
+    var infoTipos = {
+      number:    { emoji: '\uD83D\uDD22', nombre: 'Number (N\u00famero)',          explicacion: 'Se puede usar en operaciones matem\u00e1ticas: sumar, restar, posicionar.',                  typeof_: 'number'  },
+      string:    { emoji: '\uD83D\uDCDD', nombre: 'String (Texto)',            explicacion: 'Es texto. El + concatena en lugar de sumar. \u00DAtil para mostrar mensajes.',            typeof_: 'string'  },
+      boolean:   { emoji: '\u2705',       nombre: 'Boolean (Verdadero/Falso)', explicacion: 'Solo puede ser true o false. Se usa en condicionales (if).',                          typeof_: 'boolean' },
+      undefined: { emoji: '\u2753',       nombre: 'undefined (Sin valor)',     explicacion: 'La variable existe pero no tiene ning\u00fan valor asignado. Causa errores si se opera.',  typeof_: 'undefined' },
+      null:      { emoji: '\uD83D\uDEAB', nombre: 'null (Vac\u00edo intencional)',  explicacion: 'El programador decidi\u00f3 que a\u00fan no hay valor. typeof devuelve \"object\" (peculiaridad hist\u00f3rica de JS).', typeof_: 'object' },
+      array:     { emoji: '\uD83D\uDCCB', nombre: 'Array (Lista)',             explicacion: 'Colecci\u00f3n ordenada de valores, accesibles por \u00edndice: [0], [1], [2]\u2026',            typeof_: 'object' },
+      object:    { emoji: '\uD83D\uDCE6', nombre: 'Object (Objeto)',           explicacion: 'Agrupa datos con nombre (clave:valor). typeof devuelve \"object\".',                     typeof_: 'object' }
+    };
+
+    var info = infoTipos[tipo];
+    var emoji = info.emoji;
+    var nombre = info.nombre;
+    var explicacion = info.explicacion;
+    var typeofResult = info.typeof_;
+
+    resultadoTipo.innerHTML = emoji + ' <strong>' + nombre + '</strong> — ' + explicacion;
+
+    var spanDato = tipo === 'string'
+      ? '<span class="str">' + representacion + '</span>'
+      : '<span class="val">' + representacion + '</span>';
+
+    var notaExtra = '';
+    if (tipo === 'null')  notaExtra = '\n<span class="cm">// Curiosidad: typeof null === \"object\" (bug hist\u00f3rico de JS)</span>';
+    if (tipo === 'array') notaExtra = '\n<span class="cm">// Array.isArray(dato) === true</span>';
+
+    domCap5.innerHTML =
+      '<span class="kw">let</span> <span class="val">dato</span> = ' + spanDato + ';\n' +
+      '<span class="fn">typeof</span> <span class="val">dato</span>; <span class="cm">// \"' + typeofResult + '\"</span>' + notaExtra;
+
+    p5Cap5.innerHTML =
+      '<span class="kw">let</span> <span class="val">dato</span> = ' + spanDato + ';\n' +
+      '<span class="fn">print</span>(<span class="fn">typeof</span> <span class="val">dato</span>); <span class="cm">// \"' + typeofResult + '\"</span>' + notaExtra;
+
+    notaEstado.textContent = 'typeof ' + representacion + ' \u2192 \"' + typeofResult + '\". ' + explicacion;
+  }
+
+  botonEvalTipo.addEventListener('click', evaluarTipo);
+  inputTipoDato.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') evaluarTipo();
+  });
+
+  // ── Deshacer última forma ──
+  var botonDeshacer = document.getElementById('botonDeshacer');
+  botonDeshacer.addEventListener('click', function() {
+    var formas = lienzoDom.querySelectorAll('.forma');
+    if (formas.length === 0) {
+      notaEstado.textContent = 'No hay formas para deshacer.';
+      return;
+    }
+    var ultima = formas[formas.length - 1];
+    if (ultima === formaActiva) { formaActiva = null; }
+    ultima.remove();
+    // Seleccionar la nueva última si existe
+    var restantes = lienzoDom.querySelectorAll('.forma');
+    if (restantes.length > 0) {
+      var nuevaUltima = restantes[restantes.length - 1];
+      definirFormaActiva(nuevaUltima, 'Forma anterior seleccionada.');
+    } else {
+      estadoForma.textContent = 'Lienzo vacío.';
+      leyendaLienzo.textContent = 'Lienzo vacío. Usa los controles para crear formas.';
+    }
+    notaEstado.textContent = 'Deshecho: se eliminó la última forma. Quedan ' + restantes.length + '.';
+  });
+
+  // ── Limpiar lienzo ──
+  var botonLimpiar = document.getElementById('botonLimpiar');
+  botonLimpiar.addEventListener('click', function() {
+    var formas = lienzoDom.querySelectorAll('.forma');
+    for (var i = 0; i < formas.length; i++) { formas[i].remove(); }
+    formaActiva = null;
+    estadoForma.textContent = 'Lienzo limpio. Crea nuevas formas desde los capítulos.';
+    leyendaLienzo.textContent = 'Lienzo vacío. Usa los controles para crear formas.';
+    notaEstado.textContent = 'Lienzo limpiado. Todas las formas fueron eliminadas.';
+  });
+
+  // ── Inicialización ──
+  construirEtiquetas();
+</script>
+</body>
+</html>

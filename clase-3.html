@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clase 3 — Variables, operadores y dibujo algorítmico</title>
+  <style>
+    :root {
+      --texto: #2b2b2b;
+      --texto-suave: #6b655c;
+      --acento: #c84c36;
+      --acento-oscuro: #8e2f1f;
+      --borde: #cdbfa9;
+      --lienzo: #e8e8e8;
+      --grid-major: rgba(0,0,0,0.13);
+      --grid-minor: rgba(0,0,0,0.05);
+      --codigo-fondo: #1e2330;
+      --codigo-texto: #e8e8e8;
+      --token-kw: #ffcc66;
+      --token-val: #8bd3dd;
+      --token-fn: #ffd280;
+      --token-cm: #8f9bb3;
+      --token-prop: #f78c6c;
+      --token-str: #c3e88d;
+      --panel-bg: rgba(255,250,242,0.92);
+      --sombra: 0 12px 38px rgba(85,58,30,0.11);
+      --radio: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; }
+
+    html, body {
+      min-height: 100%;
+      font-family: "Segoe UI", "Trebuchet MS", system-ui, sans-serif;
+      color: var(--texto);
+      background:
+        radial-gradient(ellipse at 10% 0%, rgba(255,255,255,0.85), transparent 40%),
+        linear-gradient(135deg, #f5ead7 0%, #f1f0eb 50%, #e4ece9 100%);
+    }
+
+    .app {
+      min-height: 100vh;
+      max-width: 1520px;
+      margin: 0 auto;
+      padding: 14px;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 12px;
+    }
+
+    .cabecera {
+      display: flex;
+      align-items: baseline;
+      gap: 18px;
+      padding: 12px 18px;
+      background: var(--panel-bg);
+      border: 1px solid rgba(205,191,169,0.7);
+      border-radius: var(--radio);
+      box-shadow: var(--sombra);
+      backdrop-filter: blur(8px);
+    }
+    .cabecera h1 { font-size: 1.35rem; letter-spacing: 0.02em; white-space: nowrap; }
+    .cabecera p { color: var(--texto-suave); font-size: 0.92rem; line-height: 1.4; }
+    .cabecera-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .cabecera-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(200,76,54,0.22);
+      background: rgba(200,76,54,0.08);
+      color: var(--acento-oscuro);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 700;
+      transition: transform 100ms, background 120ms;
+    }
+    .cabecera-link:hover {
+      transform: translateY(-1px);
+      background: rgba(200,76,54,0.14);
+    }
+    .cabecera-link.activa {
+      background: linear-gradient(135deg, var(--acento), var(--acento-oscuro));
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 6px 16px rgba(200,76,54,0.22);
+    }
+
+    .principal {
+      display: grid;
+      grid-template-columns: min-content minmax(380px, 1fr);
+      gap: 14px;
+      min-height: 0;
+    }
+
+    .col-lienzo {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 0;
+      max-width: 604px;
+    }
+
+    .lienzo-titulo {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--texto-suave);
+      padding-left: 4px;
+    }
+
+    .lienzo-marco {
+      width: min-content;
+      border: 2px solid #aaa;
+      border-radius: var(--radio);
+      overflow: hidden;
+      background: #fff;
+      box-shadow: var(--sombra);
+      flex: 0 0 auto;
+    }
+
+    #lienzoDinamico {
+      display: block;
+      width: 600px;
+      height: 400px;
+      background: var(--lienzo);
+    }
+
+    .leyenda-lienzo,
+    .panel-mini,
+    .ideas-clave,
+    .nota-alerta {
+      background: var(--panel-bg);
+      border: 1px solid rgba(205,191,169,0.7);
+      border-radius: var(--radio);
+      box-shadow: var(--sombra);
+    }
+
+    .leyenda-lienzo {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 10px 14px;
+      color: var(--texto-suave);
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+    .leyenda-icono { flex: 0 0 auto; font-size: 1.1rem; }
+
+    .controles-demo {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .panel-mini {
+      padding: 12px 14px;
+    }
+    .panel-mini h3 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--acento-oscuro);
+      margin-bottom: 8px;
+    }
+    .panel-mini p {
+      color: var(--texto-suave);
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+    .panel-mini strong { color: var(--texto); }
+
+    .cap-controles {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    button.accion,
+    .badge-toggle {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 18px;
+      font: inherit;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: white;
+      background: linear-gradient(135deg, var(--acento), var(--acento-oscuro));
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(200,76,54,0.22);
+      transition: transform 100ms, filter 100ms;
+      text-decoration: none;
+    }
+    button.accion:hover,
+    .badge-toggle:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.06);
+    }
+    button.secundario {
+      background: linear-gradient(135deg, #4a6fa5, #2d4a7a);
+    }
+    button.verde {
+      background: linear-gradient(135deg, #2a7b5b, #1a5a3e);
+    }
+
+    .check-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(200,76,54,0.06);
+      color: var(--texto-suave);
+      font-size: 0.9rem;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--acento);
+    }
+
+    .rango-grupo {
+      width: 100%;
+      margin-bottom: 8px;
+    }
+    .rango-grupo label {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+
+    .panel-capitulos {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      background: var(--panel-bg);
+      border: 1px solid rgba(205,191,169,0.7);
+      border-radius: var(--radio);
+      box-shadow: var(--sombra);
+      backdrop-filter: blur(8px);
+      overflow: hidden;
+    }
+
+    .pestanas {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1px solid rgba(205,191,169,0.6);
+      flex: 0 0 auto;
+    }
+    .pestana {
+      padding: 12px 6px;
+      text-align: center;
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: var(--texto-suave);
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      box-shadow: none;
+      transition: background 120ms, color 120ms;
+      line-height: 1.25;
+    }
+    .pestana:hover { background: rgba(200,76,54,0.06); }
+    .pestana.activa {
+      color: var(--acento-oscuro);
+      background: rgba(200,76,54,0.10);
+      box-shadow: inset 0 -3px 0 var(--acento);
+    }
+    .pestana small {
+      display: block;
+      font-weight: 400;
+      margin-top: 2px;
+      font-size: 0.78rem;
+      color: var(--texto-suave);
+      opacity: 0.8;
+    }
+
+    .capitulo-contenido {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      padding: 16px;
+    }
+    .capitulo-contenido::-webkit-scrollbar { width: 8px; }
+    .capitulo-contenido::-webkit-scrollbar-thumb {
+      background: rgba(141,115,87,0.3);
+      border-radius: 999px;
+    }
+
+    .cap { display: none; }
+    .cap.visible { display: block; }
+    .cap-desc {
+      color: var(--texto-suave);
+      line-height: 1.55;
+      margin-bottom: 14px;
+      font-size: 0.93rem;
+    }
+
+    .codigo-titulo,
+    .mapa-titulo {
+      display: block;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+    .codigo-titulo { color: var(--texto-suave); }
+    .mapa-titulo { color: var(--acento-oscuro); font-weight: 700; }
+
+    .codigo-comparativa {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .bloque-codigo {
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--codigo-fondo);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .bloque-codigo h4 {
+      margin: 0;
+      padding: 7px 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: #fff4d6;
+      background: rgba(255,255,255,0.04);
+    }
+    pre {
+      margin: 0;
+      padding: 10px 12px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.84rem;
+      line-height: 1.55;
+      color: var(--codigo-texto);
+      white-space: pre-wrap;
+      overflow-x: auto;
+    }
+
+    .kw   { color: var(--token-kw); }
+    .val  { color: var(--token-val); }
+    .fn   { color: var(--token-fn); }
+    .cm   { color: var(--token-cm); }
+    .prop { color: var(--token-prop); }
+    .str  { color: var(--token-str); }
+
+    .mapa-args {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 14px;
+      font-size: 0.84rem;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(205,191,169,0.5);
+    }
+    .mapa-args th {
+      text-align: left;
+      padding: 7px 10px;
+      background: rgba(200,76,54,0.09);
+      color: var(--acento-oscuro);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 700;
+    }
+    .mapa-args td {
+      padding: 6px 10px;
+      border-bottom: 1px solid rgba(205,191,169,0.3);
+      color: var(--texto-suave);
+      vertical-align: top;
+    }
+    .mapa-args tr:last-child td { border-bottom: none; }
+    .mapa-args code {
+      background: rgba(30,35,48,0.08);
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 0.84rem;
+    }
+
+    .ideas-clave {
+      padding: 10px 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.7), rgba(240,228,210,0.4));
+    }
+    .ideas-clave h4 {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--acento-oscuro);
+      margin-bottom: 6px;
+    }
+    .ideas-clave ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--texto-suave);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .nota-alerta {
+      padding: 10px 14px;
+      margin-top: 12px;
+      color: var(--texto-suave);
+      font-size: 0.88rem;
+      line-height: 1.5;
+      border-left: 4px solid #4a6fa5;
+    }
+
+    .barra-estado {
+      padding: 10px 16px;
+      border-radius: var(--radio);
+      background: var(--panel-bg);
+      border: 1px solid rgba(205,191,169,0.7);
+      box-shadow: var(--sombra);
+      color: var(--texto-suave);
+      font-size: 0.88rem;
+      line-height: 1.4;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .barra-estado strong { color: var(--acento-oscuro); white-space: nowrap; }
+
+    @media (max-width: 1100px) {
+      .principal { grid-template-columns: 1fr; }
+      .col-lienzo { align-items: center; max-width: none; }
+    }
+
+    @media (max-width: 660px) {
+      .cabecera { flex-direction: column; gap: 6px; }
+      .cabecera h1 { font-size: 1.15rem; }
+      .cabecera-actions { margin-left: 0; width: 100%; }
+      .controles-demo { grid-template-columns: 1fr; }
+      #lienzoDinamico { width: 100%; height: auto; aspect-ratio: 3/2; }
+      .lienzo-marco { width: 100% !important; }
+      .pestana { font-size: 0.76rem; padding: 10px 4px; }
+      .codigo-comparativa { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="cabecera">
+      <h1>Clase 3</h1>
+      <p>Control 1: variables, operadores y dibujo algorítmico. Esta página muestra cómo un sketch vive en el tiempo con <strong>setup()</strong>, <strong>draw()</strong>, <strong>width</strong>, <strong>height</strong> y <strong>random()</strong>.</p>
+      <div class="cabecera-actions">
+        <a class="cabecera-link" href="index.html">Índice del curso</a>
+        <a class="cabecera-link" href="clase-2.html">Clase 2</a>
+        <a class="cabecera-link activa" href="clase-3.html">Clase 3</a>
+      </div>
+    </header>
+
+    <section class="principal">
+      <div class="col-lienzo">
+        <span class="lienzo-titulo">Demo dinámica — motor de fotogramas</span>
+        <div class="lienzo-marco">
+          <canvas id="lienzoDinamico" width="600" height="400"></canvas>
+        </div>
+
+        <div class="leyenda-lienzo">
+          <span class="leyenda-icono">&#x1f3ac;</span>
+          <span id="leyendaDemo">La esfera se mueve porque <strong>draw()</strong> vuelve a ejecutarse y actualiza una variable en cada fotograma. Activa o desactiva <strong>background()</strong> para comparar animación limpia vs rastro.</span>
+        </div>
+
+        <div class="cap-controles">
+          <button class="accion" id="botonPausa">Pausar draw()</button>
+          <button class="accion secundario" id="botonRastro">Activar rastro</button>
+          <button class="accion verde" id="botonRandom">Generar burst random()</button>
+        </div>
+
+        <div class="controles-demo">
+          <div class="panel-mini">
+            <h3>Estado del motor</h3>
+            <p><strong>setup()</strong>: una sola vez.</p>
+            <p><strong>draw()</strong>: <span id="datoLoop">activo</span></p>
+            <p><strong>frame</strong>: <span id="datoFrame">0</span></p>
+            <p><strong>background()</strong>: <span id="datoBackground">limpia cada fotograma</span></p>
+          </div>
+          <div class="panel-mini">
+            <h3>Variables de entorno</h3>
+            <p><strong>width</strong>: <span id="datoWidth">600</span></p>
+            <p><strong>height</strong>: <span id="datoHeight">400</span></p>
+            <p><strong>x</strong>: <span id="datoX">0</span></p>
+            <p><strong>random()</strong>: <span id="datoRandom">esperando</span></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-capitulos">
+        <nav class="pestanas">
+          <button class="pestana activa" data-cap="1">1. Motor<small>setup() y draw()</small></button>
+          <button class="pestana" data-cap="2">2. Lienzo<small>width y height</small></button>
+          <button class="pestana" data-cap="3">3. Animación<small>variables y background()</small></button>
+          <button class="pestana" data-cap="4">4. Aleatoriedad<small>random() y tipos</small></button>
+        </nav>
+
+        <div class="capitulo-contenido">
+          <div class="cap visible" id="cap1">
+            <p class="cap-desc">
+              Un programa interactivo no se ejecuta una sola vez de arriba hacia abajo. Necesita un <strong>ciclo de vida</strong>. En Processing, <code>setup()</code> prepara el entorno exactamente una vez y <code>draw()</code> funciona como un motor que dibuja un nuevo fotograma de manera continua, típicamente 60 veces por segundo.
+            </p>
+
+            <span class="codigo-titulo">Estructura mínima del sketch</span>
+            <div class="codigo-comparativa">
+              <div class="bloque-codigo">
+                <h4>Processing</h4>
+                <pre><span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">size</span>(<span class="val">600</span>, <span class="val">400</span>);
+  <span class="fn">background</span>(<span class="val">232</span>);
+}
+
+<span class="kw">void</span> <span class="fn">draw</span>() {
+  <span class="fn">ellipse</span>(<span class="val">300</span>, <span class="val">200</span>, <span class="val">48</span>, <span class="val">48</span>);
+}</pre>
+              </div>
+              <div class="bloque-codigo">
+                <h4>Qué significa</h4>
+                <pre><span class="cm">setup()</span>
+<span class="cm">- Inicializa el lienzo y el estado base.</span>
+<span class="cm">- Solo corre una vez.</span>
+
+<span class="cm">draw()</span>
+<span class="cm">- Repite el bloque completo.</span>
+<span class="cm">- Cada repetición produce un fotograma nuevo.</span></pre>
+              </div>
+            </div>
+
+            <span class="mapa-titulo">Ciclo de vida del programa</span>
+            <table class="mapa-args">
+              <tr><th>Etapa</th><th>Cuándo ocurre</th><th>Qué debe ir ahí</th><th>Error común</th></tr>
+              <tr>
+                <td><code>setup()</code></td>
+                <td>Solo al arrancar</td>
+                <td><code>size()</code>, configuraciones iniciales, tipografías, fondo fijo</td>
+                <td>Poner animación aquí y esperar que cambie en el tiempo</td>
+              </tr>
+              <tr>
+                <td><code>draw()</code></td>
+                <td>En bucle continuo</td>
+                <td>Dibujo fotograma a fotograma, actualización de variables</td>
+                <td>Olvidar que se repite y dibujar sin limpiar el fondo</td>
+              </tr>
+            </table>
+
+            <div class="ideas-clave">
+              <h4>Ideas clave</h4>
+              <ul>
+                <li><code>setup()</code> prepara el sistema; <code>draw()</code> mantiene vivo el sketch.</li>
+                <li>La pantalla no es una hoja estática: es una secuencia de fotogramas.</li>
+                <li>Todo lo que pongas en <code>draw()</code> se vuelve potencialmente dinámico.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="cap" id="cap2">
+            <p class="cap-desc">
+              Cuando declaras <code>size(ancho, alto)</code>, Processing guarda esos valores automáticamente en <code>width</code> y <code>height</code>. Eso permite hacer <strong>diseño relativo</strong>: ubicar elementos en el centro con <code>width / 2</code> o cerca del borde inferior con <code>height * 0.8</code> sin depender de números fijos.
+            </p>
+
+            <div class="cap-controles" style="flex-direction:column; align-items:stretch;">
+              <div class="rango-grupo">
+                <label><span>Velocidad horizontal</span><span id="valorVelocidad">2 px/frame</span></label>
+                <input type="range" id="sliderVelocidad" min="1" max="12" value="2" />
+              </div>
+              <div class="rango-grupo">
+                <label><span>Tamaño de la esfera</span><span id="valorTamano">48 px</span></label>
+                <input type="range" id="sliderTamano" min="16" max="120" value="48" />
+              </div>
+            </div>
+
+            <span class="codigo-titulo">Posicionamiento relativo con variables del sistema</span>
+            <div class="codigo-comparativa">
+              <div class="bloque-codigo">
+                <h4>Processing</h4>
+                <pre id="codigoRelativo"><span class="kw">void</span> <span class="fn">draw</span>() {
+  <span class="fn">line</span>(<span class="val">0</span>, <span class="val">320</span>, <span class="val">600</span>, <span class="val">320</span>);
+  <span class="fn">ellipse</span>(<span class="val">300</span>, <span class="val">200</span>, <span class="val">48</span>, <span class="val">48</span>);
+}</pre>
+              </div>
+              <div class="bloque-codigo">
+                <h4>Versión relativa correcta</h4>
+                <pre><span class="kw">void</span> <span class="fn">draw</span>() {
+  <span class="fn">line</span>(<span class="val">0</span>, <span class="fn">height</span> * <span class="val">0.8</span>, <span class="fn">width</span>, <span class="fn">height</span> * <span class="val">0.8</span>);
+  <span class="fn">ellipse</span>(<span class="fn">width</span> / <span class="val">2</span>, <span class="fn">height</span> / <span class="val">2</span>, <span class="val">48</span>, <span class="val">48</span>);
+}</pre>
+              </div>
+            </div>
+
+            <span class="mapa-titulo">Por qué conviene diseñar con width y height</span>
+            <table class="mapa-args">
+              <tr><th>Expresión</th><th>Qué produce</th><th>Ventaja</th><th>Ejemplo visual</th></tr>
+              <tr>
+                <td><code>width / 2</code></td>
+                <td>Centro horizontal</td>
+                <td>El elemento sigue centrado aunque cambie el lienzo</td>
+                <td>Sol, personaje, título</td>
+              </tr>
+              <tr>
+                <td><code>height / 2</code></td>
+                <td>Centro vertical</td>
+                <td>Evita recalcular manualmente la mitad</td>
+                <td>Objeto principal</td>
+              </tr>
+              <tr>
+                <td><code>height * 0.8</code></td>
+                <td>80% de la altura</td>
+                <td>Sirve para suelo, horizonte o UI inferior</td>
+                <td>Línea base, terreno</td>
+              </tr>
+            </table>
+
+            <div class="ideas-clave">
+              <h4>Ideas clave</h4>
+              <ul>
+                <li><code>width</code> y <code>height</code> nacen automáticamente después de <code>size()</code>.</li>
+                <li>Diseñar con proporciones hace que la composición no se rompa al redimensionar.</li>
+                <li>Los números fijos sirven para pruebas; las relaciones sirven para diseñar sistemas.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="cap" id="cap3">
+            <p class="cap-desc">
+              La animación básica aparece cuando una variable cambia dentro de <code>draw()</code>. Si una esfera usa una variable como <code>posicionX</code> y esa variable aumenta en cada fotograma, el ojo interpreta esa diferencia como movimiento. El lugar donde pongas <code>background()</code> cambia completamente el resultado visual.
+            </p>
+
+            <span class="codigo-titulo">Variable que se actualiza fotograma a fotograma</span>
+            <div class="codigo-comparativa">
+              <div class="bloque-codigo">
+                <h4>Animación limpia</h4>
+                <pre id="codigoAnimacion"><span class="kw">float</span> <span class="val">posicionX</span> = <span class="val">0</span>;
+
+<span class="kw">void</span> <span class="fn">draw</span>() {
+  <span class="fn">background</span>(<span class="val">232</span>);
+  <span class="val">posicionX</span> = <span class="val">posicionX</span> + <span class="val">2</span>;
+  <span class="fn">ellipse</span>(<span class="val">posicionX</span>, <span class="fn">height</span> / <span class="val">2</span>, <span class="val">48</span>, <span class="val">48</span>);
+}</pre>
+              </div>
+              <div class="bloque-codigo">
+                <h4>Con rastro</h4>
+                <pre><span class="kw">float</span> <span class="val">posicionX</span> = <span class="val">0</span>;
+
+<span class="kw">void</span> <span class="fn">draw</span>() {
+  <span class="val">posicionX</span> = <span class="val">posicionX</span> + <span class="val">2</span>;
+  <span class="fn">ellipse</span>(<span class="val">posicionX</span>, <span class="fn">height</span> / <span class="val">2</span>, <span class="val">48</span>, <span class="val">48</span>);
+  <span class="cm">// Sin background(): quedan las huellas anteriores</span>
+}</pre>
+              </div>
+            </div>
+
+            <span class="mapa-titulo">Comparación visual del uso de background()</span>
+            <table class="mapa-args">
+              <tr><th>Ubicación de background()</th><th>Efecto</th><th>Cuándo conviene</th><th>Qué enseña</th></tr>
+              <tr>
+                <td>Dentro de <code>draw()</code></td>
+                <td>Borra el fotograma anterior</td>
+                <td>Animación limpia, juegos, interfaces</td>
+                <td>La pantalla se redibuja completa cada frame</td>
+              </tr>
+              <tr>
+                <td>Fuera de <code>draw()</code></td>
+                <td>Acumula marcas y deja estela</td>
+                <td>Arte generativo, trazas, dibujo procesual</td>
+                <td>El tiempo puede usarse como material visual</td>
+              </tr>
+            </table>
+
+            <div class="ideas-clave">
+              <h4>Ideas clave</h4>
+              <ul>
+                <li>Animar es actualizar datos y volver a dibujar.</li>
+                <li><code>posicionX = posicionX + velocidad</code> convierte una variable en movimiento.</li>
+                <li><code>background()</code> no es decoración: controla si el tiempo se limpia o se acumula.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="cap" id="cap4">
+            <p class="cap-desc">
+              <code>random()</code> introduce decisiones no predefinidas: posiciones, tamaños, colores o ritmos generados por el computador. En Processing siempre devuelve un <strong>float</strong>. Si necesitas un entero, debes convertirlo de forma explícita; de lo contrario tendrás un error de tipo si intentas guardarlo en <code>int</code> directamente.
+            </p>
+
+            <span class="codigo-titulo">Aleatoriedad computacional y tipos cruzados</span>
+            <div class="codigo-comparativa">
+              <div class="bloque-codigo">
+                <h4>Uso correcto de random()</h4>
+                <pre id="codigoRandom"><span class="kw">float</span> <span class="val">x</span> = <span class="fn">random</span>(<span class="fn">width</span>);
+<span class="kw">float</span> <span class="val">tam</span> = <span class="fn">random</span>(<span class="val">12</span>, <span class="val">48</span>);
+<span class="fn">ellipse</span>(<span class="val">x</span>, <span class="fn">random</span>(<span class="fn">height</span>), <span class="val">tam</span>, <span class="val">tam</span>);</pre>
+              </div>
+              <div class="bloque-codigo">
+                <h4>Error común con int</h4>
+                <pre><span class="kw">int</span> <span class="val">columna</span> = <span class="fn">random</span>(<span class="val">10</span>);
+<span class="cm">// Error: random() devuelve float</span>
+
+<span class="kw">int</span> <span class="val">columnaOk</span> = <span class="fn">int</span>(<span class="fn">random</span>(<span class="val">10</span>));
+<span class="cm">// Conversión explícita a entero</span></pre>
+              </div>
+            </div>
+
+            <span class="mapa-titulo">Formas de usar random()</span>
+            <table class="mapa-args">
+              <tr><th>Función</th><th>Qué devuelve</th><th>Ejemplo</th><th>Uso didáctico</th></tr>
+              <tr>
+                <td><code>random(max)</code></td>
+                <td>Un valor entre <code>0</code> y <code>max</code></td>
+                <td><code>random(width)</code></td>
+                <td>Posición horizontal aleatoria</td>
+              </tr>
+              <tr>
+                <td><code>random(min, max)</code></td>
+                <td>Un valor entre <code>min</code> y <code>max</code></td>
+                <td><code>random(12, 48)</code></td>
+                <td>Tamaño o velocidad variable</td>
+              </tr>
+              <tr>
+                <td><code>int(random(...))</code></td>
+                <td>Entero derivado de un float</td>
+                <td><code>int(random(5))</code></td>
+                <td>Índices de array, columnas, grillas</td>
+              </tr>
+            </table>
+
+            <div class="ideas-clave">
+              <h4>Ideas clave</h4>
+              <ul>
+                <li>La aleatoriedad es útil cuando quieres delegar parte del diseño al sistema.</li>
+                <li><code>random()</code> siempre devuelve decimal en Processing.</li>
+                <li>Si el programa necesita un entero, hay que convertir ese float de manera explícita.</li>
+              </ul>
+            </div>
+
+            <div class="nota-alerta">
+              <strong>Advertencia pedagógica:</strong> si tus estudiantes escriben <code>int n = random(10);</code>, no es un detalle menor: ahí aparece una diferencia concreta entre tipos de datos y valores de retorno. Conviene aprovechar ese error para reforzar qué es un <code>float</code> y por qué el lenguaje exige coherencia de tipos.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="barra-estado">
+      <strong>Estado:</strong>
+      <span id="notaEstado">El sketch está corriendo. Usa los controles para mostrar cómo cambia el mismo programa cuando draw() sigue vivo, cuando background() limpia o cuando random() toma decisiones.</span>
+    </footer>
+  </main>
+
+  <script>
+    const canvas = document.getElementById('lienzoDinamico');
+    const ctx = canvas.getContext('2d');
+
+    const notaEstado = document.getElementById('notaEstado');
+    const leyendaDemo = document.getElementById('leyendaDemo');
+    const botonPausa = document.getElementById('botonPausa');
+    const botonRastro = document.getElementById('botonRastro');
+    const botonRandom = document.getElementById('botonRandom');
+    const sliderVelocidad = document.getElementById('sliderVelocidad');
+    const sliderTamano = document.getElementById('sliderTamano');
+    const valorVelocidad = document.getElementById('valorVelocidad');
+    const valorTamano = document.getElementById('valorTamano');
+
+    const datoLoop = document.getElementById('datoLoop');
+    const datoFrame = document.getElementById('datoFrame');
+    const datoBackground = document.getElementById('datoBackground');
+    const datoWidth = document.getElementById('datoWidth');
+    const datoHeight = document.getElementById('datoHeight');
+    const datoX = document.getElementById('datoX');
+    const datoRandom = document.getElementById('datoRandom');
+    const codigoRelativo = document.getElementById('codigoRelativo');
+    const codigoAnimacion = document.getElementById('codigoAnimacion');
+    const codigoRandom = document.getElementById('codigoRandom');
+
+    const pestanas = document.querySelectorAll('.pestana');
+    const capitulos = document.querySelectorAll('.cap');
+
+    const state = {
+      running: true,
+      clearEachFrame: true,
+      frame: 0,
+      x: 0,
+      speed: 2,
+      size: 48,
+      lastRandom: null,
+      burst: []
+    };
+
+    function activarPestana(numero) {
+      pestanas.forEach(function(p) {
+        p.classList.toggle('activa', p.dataset.cap === numero);
+      });
+      capitulos.forEach(function(c) {
+        c.classList.toggle('visible', c.id === 'cap' + numero);
+      });
+    }
+
+    pestanas.forEach(function(p) {
+      p.addEventListener('click', function() {
+        activarPestana(p.dataset.cap);
+      });
+    });
+
+    function setupDemo() {
+      datoWidth.textContent = canvas.width;
+      datoHeight.textContent = canvas.height;
+      state.x = 0;
+      updatePanels();
+      drawFrame();
+    }
+
+    function updatePanels() {
+      valorVelocidad.textContent = state.speed + ' px/frame';
+      valorTamano.textContent = state.size + ' px';
+      datoLoop.textContent = state.running ? 'activo' : 'pausado';
+      datoFrame.textContent = state.frame;
+      datoBackground.textContent = state.clearEachFrame ? 'limpia cada fotograma' : 'desactivado: deja rastro';
+      datoX.textContent = state.x.toFixed(1);
+      datoRandom.textContent = state.lastRandom === null ? 'esperando' : state.lastRandom.toFixed(2);
+
+      codigoRelativo.innerHTML =
+        '<span class="kw">void</span> <span class="fn">draw</span>() {\n' +
+        '  <span class="fn">line</span>(<span class="val">0</span>, <span class="fn">height</span> * <span class="val">0.8</span>, <span class="fn">width</span>, <span class="fn">height</span> * <span class="val">0.8</span>);\n' +
+        '  <span class="fn">ellipse</span>(<span class="fn">width</span> / <span class="val">2</span>, <span class="fn">height</span> / <span class="val">2</span>, <span class="val">' + state.size + '</span>, <span class="val">' + state.size + '</span>);\n' +
+        '}';
+
+      codigoAnimacion.innerHTML =
+        '<span class="kw">float</span> <span class="val">posicionX</span> = <span class="val">0</span>;\n\n' +
+        '<span class="kw">void</span> <span class="fn">draw</span>() {\n' +
+        (state.clearEachFrame ? '  <span class="fn">background</span>(<span class="val">232</span>);\n' : '') +
+        '  <span class="val">posicionX</span> = <span class="val">posicionX</span> + <span class="val">' + state.speed + '</span>;\n' +
+        '  <span class="fn">ellipse</span>(<span class="val">posicionX</span>, <span class="fn">height</span> / <span class="val">2</span>, <span class="val">' + state.size + '</span>, <span class="val">' + state.size + '</span>);\n' +
+        '}';
+
+      const ejemploRandom = state.lastRandom === null ? (Math.random() * canvas.width) : state.lastRandom;
+      codigoRandom.innerHTML =
+        '<span class="kw">float</span> <span class="val">x</span> = <span class="fn">random</span>(<span class="fn">width</span>); <span class="cm">// ' + ejemploRandom.toFixed(2) + '</span>\n' +
+        '<span class="kw">float</span> <span class="val">tam</span> = <span class="fn">random</span>(<span class="val">12</span>, <span class="val">48</span>);\n' +
+        '<span class="fn">ellipse</span>(<span class="val">x</span>, <span class="fn">random</span>(<span class="fn">height</span>), <span class="val">tam</span>, <span class="val">tam</span>);';
+    }
+
+    function drawGrid() {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(0,0,0,0.05)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x <= canvas.width; x += 20) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+      for (let y = 0; y <= canvas.height; y += 20) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+      ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+      for (let x = 0; x <= canvas.width; x += 100) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+      for (let y = 0; y <= canvas.height; y += 100) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawScene() {
+      if (state.clearEachFrame) {
+        ctx.fillStyle = '#e8e8e8';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.fillStyle = 'rgba(232,232,232,0.08)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      drawGrid();
+
+      const horizonY = canvas.height * 0.8;
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+
+      ctx.strokeStyle = '#4a6fa5';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, horizonY);
+      ctx.lineTo(canvas.width, horizonY);
+      ctx.stroke();
+
+      ctx.setLineDash([6, 6]);
+      ctx.strokeStyle = 'rgba(142,47,31,0.7)';
+      ctx.beginPath();
+      ctx.moveTo(centerX, 0);
+      ctx.lineTo(centerX, canvas.height);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = '#8e2f1f';
+      ctx.beginPath();
+      ctx.arc(state.x, centerY, state.size / 2, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#2b2b2b';
+      ctx.font = '12px Segoe UI';
+      ctx.fillText('width / 2', centerX + 8, 18);
+      ctx.fillText('height * 0.8', 10, horizonY - 8);
+
+      state.burst.forEach(function(circle) {
+        ctx.fillStyle = circle.color;
+        ctx.beginPath();
+        ctx.arc(circle.x, circle.y, circle.size / 2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    function drawFrame() {
+      drawScene();
+    }
+
+    function loop() {
+      if (state.running) {
+        state.frame += 1;
+        state.x += state.speed;
+        if (state.x - state.size / 2 > canvas.width) {
+          state.x = -state.size / 2;
+        }
+        updatePanels();
+        drawScene();
+      }
+      requestAnimationFrame(loop);
+    }
+
+    function toggleRunning() {
+      state.running = !state.running;
+      botonPausa.textContent = state.running ? 'Pausar draw()' : 'Reanudar draw()';
+      notaEstado.textContent = state.running
+        ? 'El sketch volvió a correr: draw() sigue actualizando x y generando fotogramas.'
+        : 'draw() está en pausa: la escena deja de actualizarse y el tiempo del programa se congela.';
+      updatePanels();
+    }
+
+    function toggleTrail() {
+      state.clearEachFrame = !state.clearEachFrame;
+      botonRastro.textContent = state.clearEachFrame ? 'Activar rastro' : 'Activar background()';
+      leyendaDemo.innerHTML = state.clearEachFrame
+        ? 'La esfera se mueve porque <strong>draw()</strong> vuelve a ejecutarse y actualiza una variable en cada fotograma. Activa o desactiva <strong>background()</strong> para comparar animación limpia vs rastro.'
+        : 'El fondo ya no se limpia completamente. Cada nueva posición se acumula sobre las anteriores y convierte el tiempo en una estela visible.';
+      notaEstado.textContent = state.clearEachFrame
+        ? 'background() vuelve a limpiar cada frame: la animación es nítida.'
+        : 'background() ya no limpia cada frame: el movimiento deja rastro acumulado.';
+      updatePanels();
+    }
+
+    function generarBurst() {
+      state.burst = [];
+      for (let i = 0; i < 12; i += 1) {
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+        const size = 12 + Math.random() * 36;
+        state.lastRandom = x;
+        state.burst.push({
+          x: x,
+          y: y,
+          size: size,
+          color: 'rgba(' + Math.floor(80 + Math.random() * 140) + ', ' + Math.floor(60 + Math.random() * 120) + ', ' + Math.floor(60 + Math.random() * 120) + ', 0.65)'
+        });
+      }
+      notaEstado.textContent = 'Se generó un burst con random(width), random(height) y random(12, 48). Esos valores nacen como float.';
+      updatePanels();
+      drawFrame();
+    }
+
+    sliderVelocidad.addEventListener('input', function() {
+      state.speed = Number(sliderVelocidad.value);
+      updatePanels();
+    });
+
+    sliderTamano.addEventListener('input', function() {
+      state.size = Number(sliderTamano.value);
+      updatePanels();
+      drawFrame();
+    });
+
+    botonPausa.addEventListener('click', toggleRunning);
+    botonRastro.addEventListener('click', toggleTrail);
+    botonRandom.addEventListener('click', generarBurst);
+
+    setupDemo();
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
